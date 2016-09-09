@@ -1,4 +1,10 @@
-(ns httpserver.socket)
+(ns httpserver.socket
+  (:import (java.net ServerSocket)))
+
+(defn open [port]
+  (ServerSocket. port))
+
+
 
 (comment (ns httpserver.socket
   (:import (java.net ServerSocket Socket SocketException))
