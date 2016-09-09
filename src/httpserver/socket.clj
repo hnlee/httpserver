@@ -1,4 +1,6 @@
-(ns httpserver.socket
+(ns httpserver.socket)
+
+(comment (ns httpserver.socket
   (:import (java.net ServerSocket Socket SocketException))
   (:require [clojure.java.io :as io]))
 
@@ -27,4 +29,4 @@
   (.flush writer))
 
 (defn close [open-socket]
-  (.close open-socket))
+  (.close open-socket)))

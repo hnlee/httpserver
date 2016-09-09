@@ -1,3 +1,9 @@
+(ns httpserver.operator)
+
+(defn serve [port dir]
+)
+
+(comment 
 (ns httpserver.operator
   (:require [httpserver.socket :as socket]
             [httpserver.request :as request]
@@ -16,3 +22,4 @@
       (if (get? request-line)
         (socket/give (response/compose 200) writer))
     )))
+    )
