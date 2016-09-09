@@ -1,10 +1,18 @@
 (ns httpserver.socket
-  (:import (java.net ServerSocket)))
+  (:import (java.net ServerSocket))
+  (:require [clojure.java.io :as io]))
 
 (defn open [port]
   (ServerSocket. port))
 
+(defn close [opened-socket]
+  (.close opened-socket))
 
+(defn listen [server]
+  (.accept server))
+
+(defn receive [connected-socket]
+  (.readLine (io/reader connected-socket)))
 
 (comment (ns httpserver.socket
   (:import (java.net ServerSocket Socket SocketException))
@@ -16,12 +24,6 @@
 (defn listen [server]
   (.accept server))
         
-(defn reader [client]
-  (io/reader (.getInputStream client)))
-  
-(defn writer [client]
-  (io/writer (.getOutputStream client)))
-
 (defn receive [reader]
   (loop [request-line ""
          line (.readLine reader)]
