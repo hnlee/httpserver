@@ -1,6 +1,7 @@
 (ns httpserver.core
   (:gen-class)
-  (:require [httpserver.operator :as operator]))
+  (:require [httpserver.operator :as operator]
+            [httpserver.socket :as socket]))
 
 (defn set-vars [args]
   (if (= 0 (count args)) (hash-map :port 5000 
@@ -11,5 +12,7 @@
 
 (defn -main [& args]
   (let [vars (set-vars args)]
-    (operator/serve (get-in vars :port) (get-in vars :dir))))
+    (with-open [server (socket/open (vars :port))
+                connection (socket/listen server)]
+      (operator/serve connection))))  
 

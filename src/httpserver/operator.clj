@@ -1,25 +1,17 @@
-(ns httpserver.operator)
-
-(defn serve [port dir]
-)
-
-(comment 
 (ns httpserver.operator
   (:require [httpserver.socket :as socket]
             [httpserver.request :as request]
             [httpserver.response :as response]))
 
-(defn get? [request-line]
-  (= "GET" ((request/parse request-line) :method)))
+(defn get? [client-request]
+  (= "GET" ((request/parse client-request) :method)))
 
-(defn serve [port dir]
-  (with-open
-    [server (socket/open port)
-     client (socket/listen server)
-     reader (socket/reader client)
-     writer (socket/writer client)]
-    (let [request-line (socket/receive reader)]
-      (if (get? request-line)
-        (socket/give (response/compose 200) writer))
-    )))
-    )
+(defn choose-response [client-request]
+  (if (get? client-request)
+    (response/compose (response/compose 200))))
+
+(defn serve [connection]
+  (let [client-request (socket/receive connection)
+        server-response (choose-response client-request)]
+    (socket/give connection server-response)))
+
