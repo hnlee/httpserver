@@ -14,5 +14,5 @@
   (let [vars (set-vars args)]
     (with-open [server (socket/open (vars :port))
                 connection (socket/listen server)]
-      (operator/serve connection))))  
+      (operator/serve connection :dir))))  
 

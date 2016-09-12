@@ -1,7 +1,7 @@
 (ns httpserver.operator-test
   (:import (java.net Socket))
   (:require [clojure.test :refer :all]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [clojure.java.io :as io]
             [httpserver.operator :refer :all]
             [httpserver.socket :as socket]))
@@ -12,15 +12,35 @@
                       "\r\n"
                       "My=Data"))
 
+(def head-request "HEAD /foobar HTTP/1.1\r\n")
+
+(def get-request-line 
+  (hash-map :request-line 
+            (string/trim-newline get-request))) 
+
+(def put-request-line 
+  (hash-map :request-line 
+            ((string/split-lines get-request) 0))) 
+
+(def head-request-line
+  (hash-map :request-line
+            (string/trim-newline head-request)))
+
+
 (def response-200 "HTTP/1.1 200 OK\r\n")
 
 (def response-404 "HTTP/1.1 404 Not found\r\n")
 
 (deftest test-choose-response
   (testing "GET request returns 200 response"
-    (is (= response-200 (choose-response get-request))))
+    (is (= response-200 
+           (choose-response get-request-line "."))))
   (testing "PUT request returns 200 response"
-    (is (= response-200 (choose-response put-request)))) 
+    (is (= response-200 
+           (choose-response put-request-line "."))))
+  (testing "HEAD request with invalid URI returns 404 response"
+    (is (= response-404
+           (choose-response head-request-line ".")))) 
 ) 
 
 (deftest test-serve
@@ -30,17 +50,22 @@
               client-in (io/reader client-socket)
               connection (socket/listen server)]
     (testing "Server sends 200 response to GET request"
-      (do 
-        (.write client-out get-request)
-        (.flush client-out)
-        (serve connection)
-        (is (= (str/trim-newline response-200)
-               (.readLine client-in))))) 
+      (.write client-out get-request)
+      (.flush client-out)
+      (serve connection ".")
+      (is (= (string/trim-newline response-200)
+              (.readLine client-in)))) 
     (testing "Server sends 200 response to PUT request"
-      (do
-        (.write client-out put-request)
-        (.flush client-out)
-        (serve connection)
-        (is (= (str/trim-newline response-200)
-               (.readLine client-in)))))
+      (.write client-out put-request)
+      (.flush client-out)
+      (serve connection ".")
+      (is (= (string/trim-newline response-200)
+             (.readLine client-in))))
+    (testing "Server sends 404 respone to HEAD request with invalid response"
+      (.write client-out head-request)
+      (.flush client-out)
+      (serve connection ".")
+      (is (= (string/trim-newline response-404)
+             (.readLine client-in))))
+
 ))
