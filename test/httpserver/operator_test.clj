@@ -6,17 +6,19 @@
             [httpserver.operator :refer :all]
             [httpserver.socket :as socket]))
 
-(deftest test-get?
-  (testing "Detect GET"
-    (let [request-line "GET / HTTP/1.1\r\n"]
-      (is get? request-line))))
-
-
 (deftest test-choose-response
   (testing "GET request returns 200 response"
     (let [request-line "GET / HTTP/1.1\r\n"
           status-line "HTTP/1.1 200 OK\r\n"]
       (is (= status-line (choose-response request-line)))))
+  (comment
+  (testing "HEAD request returns 200 response"
+    (let [request-line str("PUT /form HTTP/1.1\r\n"
+                           "\r\n"
+                           "My=Data")
+          status-line "HTTP/1.1 200 OK\r\n"]
+      (is (= status-line (choose-response request-line)))))
+  )
 ) 
 
 (deftest test-serve
