@@ -13,6 +13,12 @@
                                        :body
                                        "My=Data"))]
       (is (= "PUT" (request-msg :method))))) 
+  (testing "Return hashmap with method from POST request"
+    (let [request-msg (parse (hash-map :request-line
+                                       "POST / HTTP/1.1"
+                                       :body
+                                       "My=Data"))]
+      (is (= "POST" (request-msg :method)))))
 )
 
   
