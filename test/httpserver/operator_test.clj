@@ -18,6 +18,8 @@
 
 (def response-200 "HTTP/1.1 200 OK\r\n")
 
+(def response-404 "HTTP/1.1 404 Not found\r\n")
+
 (deftest test-choose-response
   (testing "GET request returns 200 response"
     (is (= response-200 (choose-response get-request))))
