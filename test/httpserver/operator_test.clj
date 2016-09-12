@@ -12,6 +12,10 @@
                       "\r\n"
                       "My=Data"))
 
+(def post-request (str "POST /form HTTP/1.1\r\n"
+                       "\r\n"
+                       "My=Data"))
+
 (def response-200 "HTTP/1.1 200 OK\r\n")
 
 (deftest test-choose-response
@@ -19,6 +23,8 @@
     (is (= response-200 (choose-response get-request))))
   (testing "PUT request returns 200 response"
     (is (= response-200 (choose-response put-request)))) 
+  (testing "POST request returns 200 response"
+    (is (= response-200 (choose-response post-request))))
 ) 
 
 (deftest test-serve
@@ -37,6 +43,13 @@
     (testing "Server sends 200 response to PUT request"
       (do
         (.write client-out put-request)
+        (.flush client-out)
+        (serve connection)
+        (is (= (str/trim-newline response-200)
+               (.readLine client-in)))))
+    (testing "Server sends 200 response to POST request"
+      (do 
+        (.write client-out post-request)
         (.flush client-out)
         (serve connection)
         (is (= (str/trim-newline response-200)
