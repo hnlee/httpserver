@@ -6,19 +6,19 @@
             [httpserver.operator :refer :all]
             [httpserver.socket :as socket]))
 
+(def get-request "GET / HTTP/1.1\r\n")
+
+(def put-request (str "PUT /form HTTP/1.1\r\n"
+                      "\r\n"
+                      "My=Data"))
+
+(def response-200 "HTTP/1.1 200 OK\r\n")
+
 (deftest test-choose-response
   (testing "GET request returns 200 response"
-    (let [request-line "GET / HTTP/1.1\r\n"
-          status-line "HTTP/1.1 200 OK\r\n"]
-      (is (= status-line (choose-response request-line)))))
-  (comment
-  (testing "HEAD request returns 200 response"
-    (let [request-line str("PUT /form HTTP/1.1\r\n"
-                           "\r\n"
-                           "My=Data")
-          status-line "HTTP/1.1 200 OK\r\n"]
-      (is (= status-line (choose-response request-line)))))
-  )
+    (is (= response-200 (choose-response get-request))))
+  (testing "PUT request returns 200 response"
+    (is (= response-200 (choose-response put-request)))) 
 ) 
 
 (deftest test-serve
@@ -28,11 +28,17 @@
               client-in (io/reader client-socket)
               connection (socket/listen server)]
     (testing "Server sends 200 response to GET request"
-      (let [request-line "GET / HTTP/1.1\r\n"
-            status-line "HTTP/1.1 200 OK\r\n"]
-        (.write client-out request-line)
+      (do 
+        (.write client-out get-request)
         (.flush client-out)
         (serve connection)
-        (is (= (str/trim-newline status-line) 
+        (is (= (str/trim-newline response-200)
+               (.readLine client-in))))) 
+    (testing "Server sends 200 response to PUT request"
+      (do
+        (.write client-out put-request)
+        (.flush client-out)
+        (serve connection)
+        (is (= (str/trim-newline response-200)
                (.readLine client-in)))))
 ))

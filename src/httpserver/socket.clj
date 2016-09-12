@@ -12,7 +12,8 @@
   (.accept server))
 
 (defn receive [connected-socket]
-  (.readLine (io/reader connected-socket)))
+  (let [reader (io/reader connected-socket)]
+    (hash-map :request-line (.readLine reader))))
 
 (defn give [connected-socket response]
   (let [writer (io/writer connected-socket)]

@@ -4,13 +4,15 @@
 
 (deftest test-parse
   (testing "Return hashmap with method from GET request"
-    (let [request-message (parse "GET / HTTP/1.1\r\n")]
-      (is (= "GET" (request-message :method))))) 
+    (let [request-msg (parse (hash-map :request-line 
+                                       "GET / HTTP/1.1"))]
+      (is (= "GET" (request-msg :method))))) 
   (testing "Return hashmap with method from PUT request"
-    (let [request-message (parse (str "PUT / HTTP/1.1\r\n"
-                                      "\r\n"
-                                      "My=Data"))]
-      (is (= "PUT" (request-message :method))))) 
+    (let [request-msg (parse (hash-map :request-line
+                                       "PUT / HTTP/1.1"
+                                       :body
+                                       "My=Data"))]
+      (is (= "PUT" (request-msg :method))))) 
 )
 
   
