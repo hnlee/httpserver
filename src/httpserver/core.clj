@@ -19,8 +19,11 @@
                            default-dir))))
 
 (defn -main [& args]
-  (let [vars (set-vars args)]
-    (with-open [server (socket/open (vars :port))
-                connection (socket/listen server)]
-      (operator/serve connection (vars :dir))))) 
+  (let [vars (set-vars args)
+        server (socket/open (vars :port))]
+    (while true 
+      (let [connection (socket/listen server)]
+        (try (operator/serve connection (vars :dir))
+             (finally (socket/close connection)))))
+    (socket/close server))) 
 

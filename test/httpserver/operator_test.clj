@@ -27,7 +27,6 @@
             (string/trim-newline (format head-request
                                          "/foobar"))))
 
-
 (def response-200 "HTTP/1.1 200 OK\r\n")
 
 (def response-404 "HTTP/1.1 404 Not found\r\n")
