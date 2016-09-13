@@ -20,7 +20,7 @@
 
 (def put-request-line 
   (hash-map :request-line 
-            ((string/split-lines get-request) 0))) 
+            ((string/split-lines put-request) 0))) 
 
 (def head-request-line
   (hash-map :request-line
@@ -54,7 +54,7 @@
       (.flush client-out)
       (serve connection ".")
       (is (= (string/trim-newline response-200)
-              (.readLine client-in)))) 
+             (.readLine client-in)))) 
     (testing "Server sends 200 response to PUT request"
       (.write client-out put-request)
       (.flush client-out)

@@ -37,6 +37,7 @@
         (.flush stream) 
         (is (= (str/trim-newline request-line) 
                ((receive connection) :request-line)))))
+    (comment
     (testing "Server can get multiline input"
       (let [request-msg (str "PUT /form HTTP/1.1\r\n"
                              "\r\n"
@@ -45,6 +46,7 @@
         (.flush stream)
         (is (= ((str/split-lines request-msg) 0)  
                ((receive connection) :request-line)))))
+    )
 ))
 
 (deftest test-give
