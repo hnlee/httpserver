@@ -7,7 +7,7 @@
             [httpserver.response :as response]))
 
 (defn not-found? [uri dir]
-  (let [path (str dir uri)]
+  (let [path (str "." uri)]
     (not (.exists (io/as-file path))))) 
 
 (defn choose-response [client-request dir]

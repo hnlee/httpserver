@@ -12,7 +12,7 @@
                       "\r\n"
                       "My=Data"))
 
-(def head-request "HEAD /foobar HTTP/1.1\r\n")
+(def head-request "HEAD %s HTTP/1.1\r\n")
 
 (def get-request-line 
   (hash-map :request-line 
@@ -24,7 +24,8 @@
 
 (def head-request-line
   (hash-map :request-line
-            (string/trim-newline head-request)))
+            (string/trim-newline (format head-request
+                                         "/foobar"))))
 
 
 (def response-200 "HTTP/1.1 200 OK\r\n")
@@ -61,11 +62,17 @@
       (serve connection ".")
       (is (= (string/trim-newline response-200)
              (.readLine client-in))))
-    (testing "Server sends 404 respone to HEAD request with invalid response"
-      (.write client-out head-request)
+    (testing "Server sends 404 response to HEAD request with invalid URI"
+      (.write client-out (format head-request "/foobar"))
       (.flush client-out)
       (serve connection ".")
       (is (= (string/trim-newline response-404)
+             (.readLine client-in))))
+    (testing "Server sends 200 response to HEAD request with valid URI"
+      (.write client-out (format head-request "/"))
+      (.flush client-out)
+      (serve connection ".")
+      (is (= (string/trim-newline response-200)
              (.readLine client-in))))
 
 ))
