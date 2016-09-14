@@ -12,15 +12,22 @@
 (defn listen [server]
   (.accept server))
 
-(defn body? [msg]
-  ((complement nil?) (string/index-of msg "Content-Length")))
+(defn body? [head]
+  ((complement nil?) (string/index-of head 
+                                      "Content-Length")))
 
-(defn read-headers [reader]
-  (loop [headers ""
+(defn read-head [reader]
+  (loop [head ""
          line (.readLine reader)]
-    (if (or (= "" line) (nil? line)) headers
-      (recur (str headers line "\r\n")
+    (if (or (= "" line) (nil? line)) head
+      (recur (str head line "\r\n")
              (.readLine reader))))) 
+
+(defn read-body [head reader]
+  (let [length (Integer. ((re-find #"Content-Length: (\d+)"
+                                   head) 1))]
+    (apply str 
+           (for [n (range length)] (char (.read reader))))))
 
 (defn receive [connected-socket]
   (let [reader (io/reader connected-socket)]

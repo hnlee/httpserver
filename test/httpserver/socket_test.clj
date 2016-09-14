@@ -31,7 +31,7 @@
                               "\r\n"))
 
 (def multi-line-request (str "PUT /form HTTP/1.1\r\n"
-                             "Content-Length: 7\r\n"
+                             "Content-Length: 9\r\n"
                              "\r\n"
                              "My=Data\r\n"))
 
@@ -51,15 +51,15 @@
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
       (is (= (str "PUT /form HTTP/1.1\r\n"
-                  "Content-Length: 7\r\n") 
+                  "Content-Length: 9\r\n") 
              (read-head stream))))))
 
 (deftest test-read-body
   (testing "Read message body from request"
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
-      (is (= "My=Data\r\n") 
-          (read-body (read-head stream) stream)))))
+      (is (= "My=Data\r\n" 
+             (read-body (read-head stream) stream))))))
 
 (deftest test-receive
   (with-open [server-socket (open 5000)
