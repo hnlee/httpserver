@@ -15,6 +15,13 @@
 (defn body? [msg]
   ((complement nil?) (string/index-of msg "Content-Length")))
 
+(defn read-headers [reader]
+  (loop [headers ""
+         line (.readLine reader)]
+    (if (or (= "" line) (nil? line)) headers
+      (recur (str headers line "\r\n")
+             (.readLine reader))))) 
+
 (defn receive [connected-socket]
   (let [reader (io/reader connected-socket)]
     (hash-map :request-line (.readLine reader))))

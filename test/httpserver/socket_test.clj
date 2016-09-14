@@ -1,5 +1,6 @@
 (ns httpserver.socket-test
-  (:import (java.net ServerSocket Socket))
+  (:import (java.net ServerSocket Socket)
+           (java.io StringReader))
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
@@ -26,7 +27,8 @@
     (testing "Client can connect to server"
       (is (.isConnected client-socket)))))
 
-(def single-line-request "GET / HTTP/1.1\r\n")
+(def single-line-request (str "GET / HTTP/1.1\r\n"
+                              "\r\n"))
 
 (def multi-line-request (str "PUT /form HTTP/1.1\r\n"
                              "Content-Length: 7\r\n"
@@ -38,6 +40,26 @@
     (is ((complement body?) single-line-request)))
   (testing "Request with Content-Length header" 
     (is (body? multi-line-request))))
+
+(deftest test-read-head
+  (testing "Request with no head"
+    (with-open [input (StringReader. single-line-request)
+                stream (io/reader input)]
+      (is (= "GET / HTTP/1.1\r\n" 
+             (read-head stream)))))
+  (testing "Request with head"
+    (with-open [input (StringReader. multi-line-request)
+                stream (io/reader input)]
+      (is (= (str "PUT /form HTTP/1.1\r\n"
+                  "Content-Length: 7\r\n") 
+             (read-head stream))))))
+
+(deftest test-read-body
+  (testing "Read message body from request"
+    (with-open [input (StringReader. multi-line-request)
+                stream (io/reader input)]
+      (is (= "My=Data\r\n") 
+          (read-body (read-head stream) stream)))))
 
 (deftest test-receive
   (with-open [server-socket (open 5000)
