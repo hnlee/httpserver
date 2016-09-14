@@ -31,9 +31,6 @@
                                   "/method_options2" 
                                   "" ""))
 
-(defn format-request [msg]
-  {:request-line ((string/split-lines msg) 0)}) 
-
 (def simple-response-200 (format response-string
                                  200 "OK"))
 
@@ -43,16 +40,13 @@
 (deftest test-choose-response
   (testing "GET request returns 200 response"
     (is (= simple-response-200 
-           (choose-response 
-             (format-request simple-get-request) "."))))
+           (choose-response simple-get-request "."))))
   (testing "PUT request returns 200 response"
     (is (= simple-response-200 
-           (choose-response 
-             (format-request simple-put-request) "."))))
+           (choose-response simple-put-request "."))))
   (testing "HEAD request with invalid URI returns 404 response"
     (is (= response-404
-           (choose-response 
-             (format-request invalid-head-request) ".")))) 
+           (choose-response invalid-head-request ".")))) 
 )
 
 (deftest test-serve

@@ -30,8 +30,10 @@
            (for [n (range length)] (char (.read reader))))))
 
 (defn receive [connected-socket]
-  (let [reader (io/reader connected-socket)]
-    (hash-map :request-line (.readLine reader))))
+  (let [reader (io/reader connected-socket)
+        head (read-head reader)]
+    (if (body? head) (str head "\r\n" (read-body reader))
+      (str head "\r\n"))))
 
 (defn give [connected-socket response]
   (let [writer (io/writer connected-socket)]

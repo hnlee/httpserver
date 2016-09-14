@@ -67,11 +67,10 @@
               connection (listen server-socket)
               stream (io/writer client-socket)]
     (testing "Server can get input" 
-      (let [request-line "GET / HTTP/1.1\r\n"]
-        (.write stream request-line)
-        (.flush stream) 
-        (is (= (str/trim-newline request-line) 
-               ((receive connection) :request-line)))))
+      (.write stream single-line-request)
+      (.flush stream) 
+      (is (= single-line-request 
+             (receive connection))))
     (comment
     (testing "Server can get multiline input"
       (let [request-msg ]
