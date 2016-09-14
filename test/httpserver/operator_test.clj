@@ -6,42 +6,54 @@
             [httpserver.operator :refer :all]
             [httpserver.socket :as socket]))
 
-(def get-request "GET / HTTP/1.1\r\n")
+(def request-string (str "%s %s HTTP/1.1\r\n"
+                         "%s\r\n"
+                         "%s\r\n"))
 
-(def put-request (str "PUT /form HTTP/1.1\r\n"
-                      "\r\n"
-                      "My=Data"))
+(def response-string "HTTP/1.1 %d %s\r\n")
 
-(def head-request "HEAD %s HTTP/1.1\r\n")
+(def simple-get-request (format request-string
+                                "GET" "/" "" ""))
 
-(def get-request-line 
-  (hash-map :request-line 
-            (string/trim-newline get-request))) 
+(def simple-put-request (format request-string
+                                "PUT" "/form" "" "My=Data"))
 
-(def put-request-line 
-  (hash-map :request-line 
-            ((string/split-lines put-request) 0))) 
+(def invalid-head-request (format request-string
+                                  "HEAD" "/foobar" "" ""))
 
-(def head-request-line
-  (hash-map :request-line
-            (string/trim-newline (format head-request
-                                         "/foobar"))))
+(def all-options-request (format request-string
+                                 "OPTIONS" 
+                                 "/method_options" 
+                                 "" ""))
 
-(def response-200 "HTTP/1.1 200 OK\r\n")
+(def some-options-request (format request-string
+                                  "OPTIONS" 
+                                  "/method_options2" 
+                                  "" ""))
 
-(def response-404 "HTTP/1.1 404 Not found\r\n")
+(defn format-request [msg]
+  {:request-line ((string/split-lines msg) 0)}) 
+
+(def simple-response-200 (format response-string
+                                 200 "OK"))
+
+(def response-404 (format response-string
+                          404 "Not found"))
 
 (deftest test-choose-response
   (testing "GET request returns 200 response"
-    (is (= response-200 
-           (choose-response get-request-line "."))))
+    (is (= simple-response-200 
+           (choose-response 
+             (format-request simple-get-request) "."))))
   (testing "PUT request returns 200 response"
-    (is (= response-200 
-           (choose-response put-request-line "."))))
+    (is (= simple-response-200 
+           (choose-response 
+             (format-request simple-put-request) "."))))
   (testing "HEAD request with invalid URI returns 404 response"
     (is (= response-404
-           (choose-response head-request-line ".")))) 
-) 
+           (choose-response 
+             (format-request invalid-head-request) ".")))) 
+)
 
 (deftest test-serve
   (with-open [server (socket/open 5000)
@@ -50,28 +62,21 @@
               client-in (io/reader client-socket)
               connection (socket/listen server)]
     (testing "Server sends 200 response to GET request"
-      (.write client-out get-request)
+      (.write client-out simple-get-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (string/trim-newline response-200)
+      (is (= (string/trim-newline simple-response-200)
              (.readLine client-in)))) 
     (testing "Server sends 200 response to PUT request"
-      (.write client-out put-request)
+      (.write client-out simple-put-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (string/trim-newline response-200)
+      (is (= (string/trimr simple-response-200)
              (.readLine client-in))))
     (testing "Server sends 404 response to HEAD request with invalid URI"
-      (.write client-out (format head-request "/foobar"))
+      (.write client-out invalid-head-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (string/trim-newline response-404)
+      (is (= (string/trimr response-404)
              (.readLine client-in))))
-    (testing "Server sends 200 response to HEAD request with valid URI"
-      (.write client-out (format head-request "/"))
-      (.flush client-out)
-      (serve connection ".")
-      (is (= (string/trim-newline response-200)
-             (.readLine client-in))))
-
 ))

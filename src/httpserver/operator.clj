@@ -11,11 +11,10 @@
     (not (.exists (io/as-file path))))) 
 
 (defn choose-response [client-request dir]
-  (let [parsed-request (request/parse client-request)]
-    (if (and (contains? #{"HEAD" "GET"}
-                        (parsed-request :method))
-             (not-found? (parsed-request :uri) 
-                         dir)) (response/compose 404)
+  (let [msg (request/parse client-request)]
+    (if 
+      (and (contains? #{"HEAD" "GET"} (msg :method))
+           (not-found? (msg :uri) dir)) (response/compose 404)
       (response/compose 200))))
  
 (defn serve [connection dir]
