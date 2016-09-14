@@ -26,6 +26,19 @@
     (testing "Client can connect to server"
       (is (.isConnected client-socket)))))
 
+(def single-line-request "GET / HTTP/1.1\r\n")
+
+(def multi-line-request (str "PUT /form HTTP/1.1\r\n"
+                             "Content-Length: 7\r\n"
+                             "\r\n"
+                             "My=Data\r\n"))
+
+(deftest test-body?
+  (testing "Request with no Content-Length header"
+    (is ((complement body?) single-line-request)))
+  (testing "Request with Content-Length header" 
+    (is (body? multi-line-request))))
+
 (deftest test-receive
   (with-open [server-socket (open 5000)
               client-socket (Socket. "localhost" 5000)
@@ -39,9 +52,7 @@
                ((receive connection) :request-line)))))
     (comment
     (testing "Server can get multiline input"
-      (let [request-msg (str "PUT /form HTTP/1.1\r\n"
-                             "\r\n"
-                             "My=Data\r\n")]
+      (let [request-msg ]
         (.write stream request-msg)
         (.flush stream)
         (is (= ((str/split-lines request-msg) 0)  
