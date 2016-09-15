@@ -10,7 +10,7 @@
                          "%s\r\n"
                          "%s\r\n"))
 
-(def response-string "HTTP/1.1 %d %s\r\n")
+(def response-string (str "HTTP/1.1 %d %s\r\n"))
 
 (def simple-get-request (format request-string
                                 "GET" "/" "" ""))
