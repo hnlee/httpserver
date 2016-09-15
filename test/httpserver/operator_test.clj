@@ -53,7 +53,18 @@
                 "Allow: GET,HEAD,POST,OPTIONS,PUT"
                 "\r\n\r\n")
            (choose-response all-options-request ".")))) 
+  (testing "OPTIONS request returns some methods"
+    (is (= (str simple-response-200
+                "Allow: GET,OPTIONS"
+                "\r\n\r\n")
+           (choose-response some-options-request "."))))
 )
+
+(defn read-response [reader]
+  (loop [msg ""
+         line (.readLine reader)]
+    (if (= "" line) (str msg "\r\n")
+      (recur (str msg line "\r\n") (.readLine reader)))))
 
 (deftest test-serve
   (with-open [server (socket/open 5000)
@@ -79,11 +90,20 @@
       (serve connection ".")
       (is (= (string/trimr response-404)
              (.readLine client-in))))
-    (testing "Server sends 200 response with Allow header to OPTIONS request"
+    (testing "Server sends 200 response with Allow header to OPTIONS request with all methods"
       (.write client-out all-options-request)
       (.flush client-out)
       (serve connection ".")
       (is (= (str simple-response-200
-                  "Allow: GET,HEAD,OPTIONS,POST,PUT"
-                  "\r\n\r\n")))) 
+                  "Allow: GET,HEAD,POST,OPTIONS,PUT"
+                  "\r\n\r\n")
+             (read-response client-in)))) 
+    (testing "Server sends 200 response with Allow header to OPTIONS request with only some methods"
+      (.write client-out some-options-request)
+      (.flush client-out)
+      (serve connection ".")
+      (is (= (str simple-response-200
+                  "Allow: GET,OPTIONS"
+                  "\r\n\r\n")
+             (read-response client-in)))) 
 ))

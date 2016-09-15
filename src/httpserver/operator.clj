@@ -15,6 +15,12 @@
     (cond 
       (and (contains? #{"HEAD" "GET"} (msg :method))
            (not-found? (msg :uri) dir)) (response/compose 404)
+      (and (= "OPTIONS" 
+              (msg :method))
+           (= "/method_options2" 
+              (msg :uri))) (response/compose
+                             200
+                             {"Allow" "GET,OPTIONS"})
       (= "OPTIONS"
          (msg :method)) (response/compose 
                           200
