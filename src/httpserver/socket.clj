@@ -24,18 +24,21 @@
              (.readLine reader))))) 
 
 (defn read-body [head reader]
-  (let [length (Integer. ((re-find #"Content-Length: (\d+)"
-                                   head) 1))]
-    (apply str 
-           (for [n (range length)] (char (.read reader))))))
+  (let [length (Integer. ((re-find 
+                            #"[Cc]ontent-[Ll]ength: ?(\d+)"
+                            head) 1))]
+    (apply str (for [n (range length)] 
+                 (char (.read reader))))))
 
-(defn receive [connected-socket]
-  (let [reader (io/reader connected-socket)
+(defn receive [connection]
+  (let [reader (io/reader connection)
         head (read-head reader)]
-    (if (body? head) (str head "\r\n" (read-body reader))
+    (if (body? head) (str head 
+                          "\r\n" 
+                          (read-body head reader))
       (str head "\r\n"))))
 
-(defn give [connected-socket response]
-  (let [writer (io/writer connected-socket)]
+(defn give [connection response]
+  (let [writer (io/writer connection)]
     (.write writer response) 
     (.flush writer))) 

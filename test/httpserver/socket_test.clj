@@ -71,14 +71,11 @@
       (.flush stream) 
       (is (= single-line-request 
              (receive connection))))
-    (comment
     (testing "Server can get multiline input"
-      (let [request-msg ]
-        (.write stream request-msg)
-        (.flush stream)
-        (is (= ((str/split-lines request-msg) 0)  
-               ((receive connection) :request-line)))))
-    )
+      (.write stream multi-line-request)
+      (.flush stream)
+      (is (= multi-line-request 
+             (receive connection))))
 ))
 
 (deftest test-give
