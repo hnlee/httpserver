@@ -3,7 +3,8 @@
 (def status-line (str "%s %d %s\r\n"))
 
 (def reason-phrase {200 "OK"
-                    404 "Not found"})
+                    404 "Not found"
+                    418 "I'm a teapot"})
 
 (defn compose 
   "Option to provide headers and message body in params"

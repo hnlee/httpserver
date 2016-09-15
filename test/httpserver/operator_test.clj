@@ -32,32 +32,44 @@
                                   "/method_options2" 
                                   "" ""))
 
-(def simple-response-200 (format response-string
+(def coffee-get-request (format request-string
+                                "GET"
+                                "/coffee"
+                                "" ""))
+
+(def response-200 (format response-string
                                  200 "OK"))
 
 (def response-404 (format response-string
                           404 "Not found"))
 
+(def response-418 (format response-string
+                          418 "I'm a teapot"))
+
 (deftest test-choose-response
   (testing "GET request returns 200 response"
-    (is (= simple-response-200 
+    (is (= response-200 
            (choose-response simple-get-request "."))))
   (testing "PUT request returns 200 response"
-    (is (= simple-response-200 
+    (is (= response-200 
            (choose-response simple-put-request "."))))
   (testing "HEAD request with invalid URI returns 404 response"
     (is (= response-404
            (choose-response invalid-head-request ".")))) 
   (testing "OPTIONS request returns all methods" 
-    (is (= (str simple-response-200
+    (is (= (str response-200
                 "Allow: GET,HEAD,POST,OPTIONS,PUT"
                 "\r\n\r\n")
            (choose-response all-options-request ".")))) 
   (testing "OPTIONS request returns some methods"
-    (is (= (str simple-response-200
+    (is (= (str response-200
                 "Allow: GET,OPTIONS"
                 "\r\n\r\n")
            (choose-response some-options-request "."))))
+  (testing "GET /coffee returns 418 response"
+    (is (= response-418
+           (choose-response coffee-get-request ".")))) 
+
 )
 
 (defn read-response [reader]
@@ -76,13 +88,13 @@
       (.write client-out simple-get-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (string/trim-newline simple-response-200)
+      (is (= (string/trim-newline response-200)
              (.readLine client-in)))) 
     (testing "Server sends 200 response to PUT request"
       (.write client-out simple-put-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (string/trimr simple-response-200)
+      (is (= (string/trimr response-200)
              (.readLine client-in))))
     (testing "Server sends 404 response to HEAD request with invalid URI"
       (.write client-out invalid-head-request)
@@ -94,7 +106,7 @@
       (.write client-out all-options-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (str simple-response-200
+      (is (= (str response-200
                   "Allow: GET,HEAD,POST,OPTIONS,PUT"
                   "\r\n\r\n")
              (read-response client-in)))) 
@@ -102,7 +114,7 @@
       (.write client-out some-options-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (str simple-response-200
+      (is (= (str response-200
                   "Allow: GET,OPTIONS"
                   "\r\n\r\n")
              (read-response client-in)))) 

@@ -13,14 +13,13 @@
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)]
     (cond 
-      (and (contains? #{"HEAD" "GET"} (msg :method))
-           (not-found? (msg :uri) dir)) (response/compose 404)
-      (and (= "OPTIONS" 
-              (msg :method))
-           (= "/method_options2" 
+      (= "/coffee" (msg :uri)) (response/compose 418)
+      (and (= "/method_options2" 
               (msg :uri))) (response/compose
                              200
                              {"Allow" "GET,OPTIONS"})
+      (and (contains? #{"HEAD" "GET"} (msg :method))
+           (not-found? (msg :uri) dir)) (response/compose 404)
       (= "OPTIONS"
          (msg :method)) (response/compose 
                           200
