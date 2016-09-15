@@ -8,6 +8,7 @@
 
 (def request-string (str "%s %s HTTP/1.1\r\n"
                          "%s\r\n"
+                         "\r\n"
                          "%s\r\n"))
 
 (def response-string (str "HTTP/1.1 %d %s\r\n"))
@@ -47,6 +48,11 @@
   (testing "HEAD request with invalid URI returns 404 response"
     (is (= response-404
            (choose-response invalid-head-request ".")))) 
+  (testing "OPTIONS request returns all methods" 
+    (is (= (str simple-response-200
+                "Allow: GET, HEAD, POST, OPTIONS, PUT"
+                "\r\n\r\n")
+           (choose-response all-options-request ".")))) 
 )
 
 (deftest test-serve
@@ -73,4 +79,11 @@
       (serve connection ".")
       (is (= (string/trimr response-404)
              (.readLine client-in))))
+    (testing "Server sends 200 response with Allow header to OPTIONS request"
+      (.write client-out all-options-request)
+      (.flush client-out)
+      (serve connection ".")
+      (is (= (str simple-response-200
+                  "Allow: GET, HEAD, OPTIONS, POST, PUT"
+                  "\r\n\r\n")))) 
 ))

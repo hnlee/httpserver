@@ -12,10 +12,15 @@
 
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)]
-    (if 
+    (cond 
       (and (contains? #{"HEAD" "GET"} (msg :method))
            (not-found? (msg :uri) dir)) (response/compose 404)
-      (response/compose 200))))
+      (= "OPTIONS"
+         (msg :method)) (response/compose 
+                          200
+                          {"Allow" 
+                           "GET, HEAD, POST, OPTIONS, PUT"})
+      :else (response/compose 200))))
  
 (defn serve [connection dir]
   (let [client-request (socket/receive connection)
