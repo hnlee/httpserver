@@ -50,7 +50,7 @@
            (choose-response invalid-head-request ".")))) 
   (testing "OPTIONS request returns all methods" 
     (is (= (str simple-response-200
-                "Allow: GET, HEAD, POST, OPTIONS, PUT"
+                "Allow: GET,HEAD,POST,OPTIONS,PUT"
                 "\r\n\r\n")
            (choose-response all-options-request ".")))) 
 )
@@ -84,6 +84,6 @@
       (.flush client-out)
       (serve connection ".")
       (is (= (str simple-response-200
-                  "Allow: GET, HEAD, OPTIONS, POST, PUT"
+                  "Allow: GET,HEAD,OPTIONS,POST,PUT"
                   "\r\n\r\n")))) 
 ))

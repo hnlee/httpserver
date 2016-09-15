@@ -13,8 +13,8 @@
            (compose 404))))
   (testing "Return 200 status code with Allows header"
     (is (= (str (format response-string 200 "OK")
-                "Allow: GET, HEAD, POST, OPTIONS, PUT"
+                "Allow: GET,HEAD,POST,OPTIONS,PUT"
                 "\r\n\r\n")         
            (compose 200
-                    {"Allow" "GET, HEAD, POST, OPTIONS, PUT"}))))
+                    {"Allow" "GET,HEAD,POST,OPTIONS,PUT"}))))
 )

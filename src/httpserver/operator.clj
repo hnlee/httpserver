@@ -19,7 +19,7 @@
          (msg :method)) (response/compose 
                           200
                           {"Allow" 
-                           "GET, HEAD, POST, OPTIONS, PUT"})
+                           "GET,HEAD,POST,OPTIONS,PUT"})
       :else (response/compose 200))))
  
 (defn serve [connection dir]
