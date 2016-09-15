@@ -17,6 +17,8 @@
          (msg :uri)) (response/compose 418
                                        {}
                                        "I'm a teapot")
+      (= "/tea"
+         (msg :uri)) (response/compose 200)
       (and (= "/method_options2" 
               (msg :uri))) (response/compose
                              200

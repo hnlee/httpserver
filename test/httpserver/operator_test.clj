@@ -37,6 +37,11 @@
                                 "/coffee"
                                 "" ""))
 
+(def tea-get-request (format request-string
+                             "GET"
+                             "/tea"
+                             "" ""))
+
 (def response-200 (format response-string
                                  200 "OK"))
 
@@ -72,6 +77,9 @@
                 "\r\n\r\n"
                 "I'm a teapot")
            (choose-response coffee-get-request ".")))) 
+  (testing "GET /tea returns 200 response"
+    (is (= response-200
+           (choose-response tea-get-request "."))))
 
 )
 
