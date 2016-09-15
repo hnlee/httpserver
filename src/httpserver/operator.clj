@@ -13,7 +13,10 @@
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)]
     (cond 
-      (= "/coffee" (msg :uri)) (response/compose 418)
+      (= "/coffee" 
+         (msg :uri)) (response/compose 418
+                                       {}
+                                       "I'm a teapot")
       (and (= "/method_options2" 
               (msg :uri))) (response/compose
                              200

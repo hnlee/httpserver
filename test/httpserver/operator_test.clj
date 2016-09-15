@@ -67,16 +67,22 @@
                 "\r\n\r\n")
            (choose-response some-options-request "."))))
   (testing "GET /coffee returns 418 response"
-    (is (= response-418
+    (is (= (str response-418
+                "Content-Length: 12"
+                "\r\n\r\n"
+                "I'm a teapot")
            (choose-response coffee-get-request ".")))) 
 
 )
 
-(defn read-response [reader]
-  (loop [msg ""
-         line (.readLine reader)]
-    (if (= "" line) (str msg "\r\n")
-      (recur (str msg line "\r\n") (.readLine reader)))))
+(defn read-response [reader body-length]
+  (str (loop [headers ""
+              line (.readLine reader)]
+         (if (= "" line) (str headers "\r\n")
+           (recur (str headers line "\r\n") 
+                  (.readLine reader))))
+       (apply str (for [n (range body-length)]
+                    (char (.read reader))))))
 
 (deftest test-serve
   (with-open [server (socket/open 5000)
@@ -109,7 +115,7 @@
       (is (= (str response-200
                   "Allow: GET,HEAD,POST,OPTIONS,PUT"
                   "\r\n\r\n")
-             (read-response client-in)))) 
+             (read-response client-in 0)))) 
     (testing "Server sends 200 response with Allow header to OPTIONS request with only some methods"
       (.write client-out some-options-request)
       (.flush client-out)
@@ -117,5 +123,5 @@
       (is (= (str response-200
                   "Allow: GET,OPTIONS"
                   "\r\n\r\n")
-             (read-response client-in)))) 
+             (read-response client-in 0)))) 
 ))

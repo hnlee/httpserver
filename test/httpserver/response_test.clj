@@ -18,6 +18,11 @@
            (compose 200
                     {"Allow" "GET,HEAD,POST,OPTIONS,PUT"}))))
   (testing "Return 418 status code"
-    (is (= (format response-string 418 "I'm a teapot")
-           (compose 418))))
+    (is (= (str (format response-string 418 "I'm a teapot")
+                "Content-Length: 12\r\n"
+                "\r\n"
+                "I'm a teapot")
+           (compose 418
+                    {}
+                    "I'm a teapot"))))
 )
