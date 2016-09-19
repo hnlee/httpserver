@@ -30,8 +30,12 @@
        body
        "</body></html>"))
 
-(defn content [filename]
-  (slurp filename))
+(defn content [path]
+  (if (directory? path) (htmlify (str "Index of "
+                                      ((re-find #".*(/.*?)$"
+                                                path) 1))
+                                 (linkify (ls path)))
+    (slurp path)))
 
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)
@@ -46,13 +50,6 @@
                               response/compose
                               ((router/routes method) uri)) 
       (not-found? path) (response/compose 404)
-      (and (= method "GET")
-           (directory? path)) (response/compose 
-                                200
-                                {}
-                                (htmlify (str "Index of "
-                                              uri)
-                                         (linkify (ls path))))
       (= method "GET") (response/compose 200
                                          {}
                                          (content path)))

@@ -49,9 +49,8 @@
 
 (def text-get-request (format request-string
                               "GET"
-                              "/test/httpserver/test_file"
+                              "/test/httpserver/public/file1"
                               "" ""))
-
 
 (def response-200 (format response-string
                                  200 "OK"))
@@ -98,13 +97,11 @@
            (htmlify "Hello World" "Hello world!")))))
 
 (deftest test-content
-  (testing "Return text file content as string"
-    (spit "test/httpserver/test_file" "test")
-    (is (= "test"
-           (content "test/httpserver/test_file")))
-    (io/delete-file "test/httpserver/test_file")))
-            
-           
+  (testing "Return text file content"
+    (let [path "test/httpserver/public/file1"]
+      (is (= "file1 contents"
+             (content path))))))
+     
 (deftest test-choose-response
   (testing "GET request returns 200 response"
     (is ((complement nil?) 
@@ -150,11 +147,10 @@
                   html)
              (choose-response simple-get-request ".")))))
   (testing "GET on text file returns content in body"
-    (spit "test/httpserver/test_file" "test")
     (is (= (str response-200
-                "Content-Length: 4"
+                "Content-Length: 14"
                 "\r\n\r\n" 
-                "test")
+                "file1 contents")
            (choose-response text-get-request "."))))
 )
 
