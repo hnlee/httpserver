@@ -43,9 +43,15 @@
                              "" ""))
 
 (def redirect-get-request (format request-string
-                             "GET"
-                             "/redirect"
-                             "" ""))
+                                  "GET"
+                                  "/redirect"
+                                  "" ""))
+
+(def text-get-request (format request-string
+                              "GET"
+                              "/test/httpserver/test_file"
+                              "" ""))
+
 
 (def response-200 (format response-string
                                  200 "OK"))
@@ -61,27 +67,50 @@
 
 (deftest test-not-found? 
   (testing "File that exists"
-    (is (not (not-found? "/project.clj" "."))))
+    (is (not (not-found? "./project.clj"))))
   (testing "File that does not exist"
-    (is (not-found? "/nonsense" ".")))
+    (is (not-found? "./nonsense")))
   (testing "Directory that exists"
-    (is (not (not-found? "/src" ".")))))
+    (is (not (not-found? "./src")))))
 
 (deftest test-directory?
   (testing "Path to a directory"
-    (is (directory? "/src" ".")))
+    (is (directory? "./src")))
   (testing "Path to a file"
-    (is (not (directory? "/project.clj" ".")))))
+    (is (not (directory? "./project.clj")))))
 
 (deftest test-ls
   (testing "Get contents of a directory"
-    (is (ls "/" ".")
-        (apply list (.list (clojure.java.io/as-file "."))))))
+    (is (= (apply list (.list (io/as-file "./")))
+           (ls "./")))))
 
+(deftest test-linkify
+  (testing "Return HTML markup for list of paths" 
+    (is (= (str "<a href=\"/file1\">file1</a><br />"
+                "<a href=\"/file2\">file2</a><br />")
+           (linkify '("file1" "file2"))))))
+
+(deftest test-htmlify
+  (testing "Return HTML document given title and body"
+    (is (= (str "<html><head>"
+                "<title>Hello World</title>"
+                "</head><body>Hello world!</body></html>")
+           (htmlify "Hello World" "Hello world!")))))
+
+(deftest test-content
+  (testing "Return text file content as string"
+    (spit "test/httpserver/test_file" "test")
+    (is (= "test"
+           (content "test/httpserver/test_file")))
+    (io/delete-file "test/httpserver/test_file")))
+            
+           
 (deftest test-choose-response
   (testing "GET request returns 200 response"
-    (is (= response-200 
-           (choose-response simple-get-request "."))))
+    (is ((complement nil?) 
+         (re-find 
+           (re-pattern response-200) 
+           (choose-response simple-get-request ".")))))
   (testing "PUT request returns 200 response"
     (is (= response-200 
            (choose-response simple-put-request "."))))
@@ -112,16 +141,22 @@
                 "Location: http://localhost:5000/"
                 "\r\n\r\n")
            (choose-response redirect-get-request ".")))) 
+  (testing "GET / returns directory listing with links"
+    (let [html (htmlify "Index of /" (linkify (ls "./")))]
+      (is (= (str response-200
+                  "Content-Length: "
+                  (count html)
+                  "\r\n\r\n"
+                  html)
+             (choose-response simple-get-request ".")))))
+  (testing "GET on text file returns content in body"
+    (spit "test/httpserver/test_file" "test")
+    (is (= (str response-200
+                "Content-Length: 4"
+                "\r\n\r\n" 
+                "test")
+           (choose-response text-get-request "."))))
 )
-
-(defn read-response [reader body-length]
-  (str (loop [headers ""
-              line (.readLine reader)]
-         (if (= "" line) (str headers "\r\n")
-           (recur (str headers line "\r\n") 
-                  (.readLine reader))))
-       (apply str (for [n (range body-length)]
-                    (char (.read reader))))))
 
 (deftest test-serve
   (with-open [server (socket/open 5000)
@@ -129,38 +164,11 @@
               client-out (io/writer client-socket)
               client-in (io/reader client-socket)
               connection (socket/listen server)]
-    (testing "Server sends 200 response to GET request"
-      (.write client-out simple-get-request)
-      (.flush client-out)
-      (serve connection ".")
-      (is (= (string/trim-newline response-200)
-             (.readLine client-in)))) 
-    (testing "Server sends 200 response to PUT request"
-      (.write client-out simple-put-request)
-      (.flush client-out)
-      (serve connection ".")
-      (is (= (string/trimr response-200)
-             (.readLine client-in))))
-    (testing "Server sends 404 response to HEAD request with invalid URI"
+    (testing "Server sends 404 response to HEAD request"
       (.write client-out invalid-head-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= (string/trimr response-404)
+      (is (= (string/trim-newline response-404)
              (.readLine client-in))))
-    (testing "Server sends 200 response with Allow header to OPTIONS request with all methods"
-      (.write client-out all-options-request)
-      (.flush client-out)
-      (serve connection ".")
-      (is (= (str response-200
-                  "Allow: GET,HEAD,POST,OPTIONS,PUT"
-                  "\r\n\r\n")
-             (read-response client-in 0)))) 
-    (testing "Server sends 200 response with Allow header to OPTIONS request with only some methods"
-      (.write client-out some-options-request)
-      (.flush client-out)
-      (serve connection ".")
-      (is (= (str response-200
-                  "Allow: GET,OPTIONS"
-                  "\r\n\r\n")
-             (read-response client-in 0)))) 
+
 ))
