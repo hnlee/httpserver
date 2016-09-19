@@ -7,24 +7,37 @@
             [httpserver.response :as response]))
 
 (defn not-found? [uri dir]
-  (let [path (str "." uri)]
+  (let [path (str dir uri)]
     (not (.exists (io/as-file path))))) 
+
+(defn directory? [uri dir]
+  (let [path (str dir uri)]
+    (.isDirectory (io/as-file path))))
+
+(defn ls [uri dir]
+  (let [path (str dir uri)]
+    (apply list (.list (io/as-file path)))))
 
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)]
     (cond 
+      (= "/redirect"
+         (msg :uri)) (response/compose 302
+                                       {"Location"
+                                        "http://localhost:5000/"})
       (= "/coffee" 
          (msg :uri)) (response/compose 418
                                        {}
                                        "I'm a teapot")
       (= "/tea"
          (msg :uri)) (response/compose 200)
-      (and (= "/method_options2" 
-              (msg :uri))) (response/compose
-                             200
-                             {"Allow" "GET,OPTIONS"})
+      (= "/method_options2" 
+         (msg :uri)) (response/compose 200
+                                       {"Allow" 
+                                        "GET,OPTIONS"})
       (and (contains? #{"HEAD" "GET"} (msg :method))
-           (not-found? (msg :uri) dir)) (response/compose 404)
+           (not-found? 
+             (msg :uri) dir)) (response/compose 404)
       (= "OPTIONS"
          (msg :method)) (response/compose 
                           200

@@ -25,4 +25,10 @@
            (compose 418
                     {}
                     "I'm a teapot"))))
+  (testing "Return 302 response code"
+    (is (= (str (format response-string 302 "Found")
+                "Location: http://localhost:5000/\r\n"
+                "\r\n")
+           (compose 302
+                    {"Location" "http://localhost:5000/"}))))
 )

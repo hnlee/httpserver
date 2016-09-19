@@ -42,6 +42,11 @@
                              "/tea"
                              "" ""))
 
+(def redirect-get-request (format request-string
+                             "GET"
+                             "/redirect"
+                             "" ""))
+
 (def response-200 (format response-string
                                  200 "OK"))
 
@@ -50,6 +55,28 @@
 
 (def response-418 (format response-string
                           418 "I'm a teapot"))
+
+(def response-302 (format response-string
+                          302 "Found"))
+
+(deftest test-not-found? 
+  (testing "File that exists"
+    (is (not (not-found? "/project.clj" "."))))
+  (testing "File that does not exist"
+    (is (not-found? "/nonsense" ".")))
+  (testing "Directory that exists"
+    (is (not (not-found? "/src" ".")))))
+
+(deftest test-directory?
+  (testing "Path to a directory"
+    (is (directory? "/src" ".")))
+  (testing "Path to a file"
+    (is (not (directory? "/project.clj" ".")))))
+
+(deftest test-ls
+  (testing "Get contents of a directory"
+    (is (ls "/" ".")
+        (apply list (.list (clojure.java.io/as-file "."))))))
 
 (deftest test-choose-response
   (testing "GET request returns 200 response"
@@ -80,7 +107,11 @@
   (testing "GET /tea returns 200 response"
     (is (= response-200
            (choose-response tea-get-request "."))))
-
+  (testing "GET /redirect returns 302 response"
+    (is (= (str response-302
+                "Location: http://localhost:5000/"
+                "\r\n\r\n")
+           (choose-response redirect-get-request ".")))) 
 )
 
 (defn read-response [reader body-length]

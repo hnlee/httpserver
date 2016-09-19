@@ -4,7 +4,8 @@
 
 (def reason-phrase {200 "OK"
                     404 "Not found"
-                    418 "I'm a teapot"})
+                    418 "I'm a teapot"
+                    302 "Found"})
 
 (defn format-status-line [status-code]
   (format status-line
