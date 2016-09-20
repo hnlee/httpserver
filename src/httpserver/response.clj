@@ -18,6 +18,9 @@
          (for [header (keys headers-map)]
            (str header ": " (headers-map header) "\r\n"))))
 
+(defn string->bytes [string]
+  (byte-array (map (comp byte int) string)))
+
 (defn compose 
   "Option to provide headers and message body in params"
   ([status-code] (format-status-line status-code)) 

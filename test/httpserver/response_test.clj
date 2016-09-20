@@ -15,6 +15,11 @@
        (format-headers {"Allow" "GET" 
                         "Content-Length" 10}))))
 
+(deftest test-string->bytes
+  (testing "Convert string to byte array"
+    (= (byte-array (map (comp byte int) (range 97 102)))
+       (string->bytes "abc"))))
+
 (deftest test-compose
   (testing "Return 200 status code"
     (is (= (format response-string 200 "OK")
