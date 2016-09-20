@@ -4,6 +4,17 @@
 
 (def response-string (str "HTTP/1.1 %d %s\r\n"))
 
+(deftest test-format-status-line
+  (testing "Format 200 status line"
+    (= "HTTP/1.1 200 OK"
+       (format-status-line 200))))
+
+(deftest test-format-headers
+  (testing "Format headers hashmap into string"
+    (= "Allow: GET\r\nContent-Length: 10"
+       (format-headers {"Allow" "GET" 
+                        "Content-Length" 10}))))
+
 (deftest test-compose
   (testing "Return 200 status code"
     (is (= (format response-string 200 "OK")
