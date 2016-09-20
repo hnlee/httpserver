@@ -35,7 +35,18 @@
                                       ((re-find #".*(/.*?)$"
                                                 path) 1))
                                  (linkify (ls path)))
-    (slurp path)))
+    (let [file (io/as-file path)]
+      (with-open [stream (io/input-stream file)] 
+        (vec (repeatedly (.length file) 
+                         #(.read stream)))))))
+
+(defn content-type [path]
+  (cond 
+    (directory? path) "text/html"
+    ((complement nil?) 
+      (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg" 
+    :else
+    "text/plain"))
 
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)
@@ -50,9 +61,11 @@
                               response/compose
                               ((router/routes method) uri)) 
       (not-found? path) (response/compose 404)
-      (= method "GET") (response/compose 200
-                                         {}
-                                         (content path)))
+      (= method "HEAD") (response/compose 200)
+      (= method "GET") (response/compose 
+                         200
+                         {"Content-Type" (content-type path)}
+                         (content path)))
 ))
  
 (defn serve [connection dir]

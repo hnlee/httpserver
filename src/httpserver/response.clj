@@ -18,27 +18,31 @@
          (for [header (keys headers-map)]
            (str header ": " (headers-map header) "\r\n"))))
 
-(defn string->bytes [string]
-  (byte-array (map (comp byte int) string)))
+(defn str->bytes [string]
+  (map (comp byte int) string))
 
 (defn compose 
   "Option to provide headers and message body in params"
-  ([status-code] (format-status-line status-code)) 
+  ([status-code] 
+    (str->bytes (format-status-line status-code))) 
   ([status-code headers-map]
-    (str (format-status-line status-code) 
-         (format-headers headers-map)
-         "\r\n"))
+    (str->bytes (str (format-status-line status-code) 
+                     (format-headers headers-map)
+                     "\r\n")))
   ([status-code headers-map body]
-   (if (contains? 
-         headers-map 
-         "Content-Length") (str (format-status-line 
-                                  status-code)
-                                (format-headers 
-                                  headers-map)
-                                "\r\n"
-                                body)
-     (compose status-code
-              (merge headers-map
-                     {"Content-Length" (count body)})
-              body)))
+   (let [msg-body (if (string? body) (str->bytes body) body)]
+     (if (contains? 
+           headers-map 
+           "Content-Length") (concat 
+                               (str->bytes
+                                 (str (format-status-line 
+                                        status-code)
+                                      (format-headers 
+                                        headers-map)
+                                      "\r\n"))
+                              msg-body)
+       (compose status-code
+                (merge headers-map
+                       {"Content-Length" (count msg-body)})
+                msg-body))))
 )

@@ -84,8 +84,9 @@
               connection (listen server-socket)
               stream (io/reader client-socket)]
     (testing "Server can send output" 
-      (let [status-line "HTTP/1.1 200 OK\r\n"]
-        (give connection status-line)
+      (let [status-line "HTTP/1.1 200 OK\r\n"
+            output (map (comp byte int) status-line)]
+        (give connection output)
         (is (= (str/trim-newline status-line) 
                (.readLine stream)))))
 ))

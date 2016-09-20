@@ -39,6 +39,9 @@
       (str head "\r\n"))))
 
 (defn give [connection response]
-  (let [writer (io/writer connection)]
-    (.write writer response) 
-    (.flush writer))) 
+  (let [stream (io/output-stream connection)]
+    (.write stream 
+            (byte-array response)
+            0
+            (count response)) 
+    (.flush stream))) 
