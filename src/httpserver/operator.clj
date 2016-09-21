@@ -1,5 +1,6 @@
 (ns httpserver.operator
   (:require [clojure.java.io :as io]
+            [clojure.string :as string]
             [httpserver.socket :as socket]
             [httpserver.request :as request]
             [httpserver.response :as response]
@@ -7,6 +8,12 @@
 
 (defn not-found? [path]
   (not (.exists (io/as-file path)))) 
+
+(defn decode-uri [uri]
+  (string/replace uri 
+                  #"(?i)%[0-9a-f]{2}"
+                  #(str (char (Integer/parseInt (subs % 1) 
+                                                16)))))
 
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)

@@ -49,7 +49,14 @@
     (is (not-found? "./nonsense")))
   (testing "Directory that exists"
     (is (not (not-found? "./src")))))
-   
+ 
+(deftest test-decode-uri
+  (testing "Decode URL-encoded characters in URI"
+    (is (= " "
+           (decode-uri "%20")))
+    (is (= " <, >"
+           (decode-uri "%20%3C%2C%20%3E")))))
+  
 (deftest test-choose-response
   (testing "Invalid URI returns 404 response"
     (is (= (response/compose 404) 

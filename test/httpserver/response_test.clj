@@ -5,22 +5,6 @@
 
 (def response-string (str "HTTP/1.1 %d %s\r\n"))
 
-(deftest test-format-status-line
-  (testing "Format 200 status line"
-    (= "HTTP/1.1 200 OK"
-       (format-status-line 200))))
-
-(deftest test-format-headers
-  (testing "Format headers hashmap into string"
-    (= "Allow: GET\r\nContent-Length: 10"
-       (format-headers {"Allow" "GET" 
-                        "Content-Length" 10}))))
-
-(deftest test-str->bytes
-  (testing "Convert string to byte array"
-    (= (map (comp byte int) (range 97 102))
-       (str->bytes "abc"))))
-
 (deftest test-directory?
   (testing "Path to a directory"
     (is (directory? "./src")))
@@ -68,7 +52,23 @@
     (let [path "test/httpserver/public/image.jpeg"]
       (is (= "image/jpeg"
              (content-type path))))))
-  
+
+(deftest test-format-status-line
+  (testing "Format 200 status line"
+    (= "HTTP/1.1 200 OK"
+       (format-status-line 200))))
+
+(deftest test-format-headers
+  (testing "Format headers hashmap into string"
+    (= "Allow: GET\r\nContent-Length: 10"
+       (format-headers {"Allow" "GET" 
+                        "Content-Length" 10}))))
+
+(deftest test-str->bytes
+  (testing "Convert string to byte array"
+    (= (map (comp byte int) (range 97 102))
+       (str->bytes "abc"))))
+
 (deftest test-compose
   (testing "Return 200 status code"
     (is (= (str->bytes 
@@ -93,4 +93,5 @@
                   "I'm a teapot"))
            (compose 418
                     {}
-                    "I'm a teapot")))))
+                    "I'm a teapot"))))
+  )
