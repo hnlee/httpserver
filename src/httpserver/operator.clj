@@ -18,7 +18,7 @@
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)
         method (msg :method)
-        uri (msg :uri)
+        uri (decode-uri (msg :uri))
         path (str dir (msg :uri))]
     (cond
       (and (contains? router/routes 

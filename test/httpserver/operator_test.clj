@@ -33,6 +33,11 @@
                               "/test/httpserver/public/file1"
                               "" ""))
 
+(def encoded-tea-request (format request-string
+                                 "GET"
+                                 "/%74%65%61"
+                                 "" ""))
+
 (def response-200 (format response-string
                                  200 "OK"))
 
@@ -67,13 +72,16 @@
                              "I'm a teapot")
            (choose-response coffee-get-request ".")))) 
   (testing "HEAD on valid URI returns 200 response with no body" 
-     (is (= (response/compose 200)
+    (is (= (response/compose 200)
             (choose-response valid-head-request "."))))
   (testing "GET on text file returns content in body"
-     (is (= (response/compose 200
+    (is (= (response/compose 200
                               {"Content-Type" "text/plain"}
                               "file1 contents")
             (choose-response text-get-request "."))))
+  (testing "URI with encoded characters is decoded"
+    (is (= (response/compose 200)
+           (choose-response encoded-tea-request ".")))) 
 )
 
 (deftest test-serve
