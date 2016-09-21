@@ -49,56 +49,7 @@
     (is (not-found? "./nonsense")))
   (testing "Directory that exists"
     (is (not (not-found? "./src")))))
-
-(deftest test-directory?
-  (testing "Path to a directory"
-    (is (directory? "./src")))
-  (testing "Path to a file"
-    (is (not (directory? "./project.clj")))))
-
-(deftest test-ls
-  (testing "Get contents of a directory"
-    (is (= (apply list (.list (io/as-file "./")))
-           (ls "./")))))
-
-(deftest test-linkify
-  (testing "Return HTML markup for list of paths" 
-    (is (= (str "<a href=\"/file1\">file1</a><br />"
-                "<a href=\"/file2\">file2</a><br />")
-           (linkify '("file1" "file2"))))))
-
-(deftest test-htmlify
-  (testing "Return HTML document given title and body"
-    (is (= (str "<html><head>"
-                "<title>Hello World</title>"
-                "</head><body>Hello world!</body></html>")
-           (htmlify "Hello World" "Hello world!")))))
-
-(deftest test-content
-  (testing "Return text file content"
-    (let [path "test/httpserver/public/file1"]
-      (is (= (map (comp byte int) "file1 contents") 
-             (content path)))))
-  (testing "Return image file content"
-    (let [path "test/httpserver/public/image.jpeg"
-          file (io/as-file path)]
-      (with-open [stream (io/input-stream file)]
-        (is (= (vec (repeatedly (.length file)
-                                #(.read stream))) 
-               (content path))))))
-)
-
-(deftest test-content-type
-  (testing "Plain text content"
-    (let [path "test/httpserver/public/file1"]
-      (is (= "text/plain"
-             (content-type path)))))
-  (testing "Image content"
-    (let [path "test/httpserver/public/image.jpeg"]
-      (is (= "image/jpeg"
-             (content-type path)))))
-)
-     
+   
 (deftest test-choose-response
   (testing "Invalid URI returns 404 response"
     (is (= (response/compose 404) 

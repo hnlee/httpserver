@@ -1,4 +1,6 @@
-(ns httpserver.response)
+(ns httpserver.response
+  (:require [clojure.java.io :as io]
+            [clojure.string :as string]))
 
 (def status-line (str "%s %d %s\r\n"))
 
@@ -20,6 +22,44 @@
 
 (defn str->bytes [string]
   (map (comp byte int) string))
+
+(defn linkify [paths]
+  (string/join (map (fn [path] (str "<a href=\"/"
+                                    path
+                                    "\">"
+                                    path
+                                    "</a><br />")) paths))) 
+
+(defn htmlify [title body]
+  (str "<html><head><title>"
+       title
+       "</title></head><body>"
+       body
+       "</body></html>"))
+
+(defn ls [path]
+  (apply list (.list (io/as-file path))))
+
+(defn directory? [path]
+  (.isDirectory (io/as-file path)))
+
+(defn content [path]
+  (if (directory? path) (htmlify (str "Index of "
+                                      ((re-find #".*(/.*?)$"
+                                                path) 1))
+                                 (linkify (ls path)))
+    (let [file (io/as-file path)]
+      (with-open [stream (io/input-stream file)] 
+        (vec (repeatedly (.length file) 
+                         #(.read stream)))))))
+
+(defn content-type [path]
+  (cond 
+    (directory? path) "text/html"
+    ((complement nil?) 
+      (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg" 
+    :else
+    "text/plain"))
 
 (defn compose 
   "Option to provide headers and message body in params"
