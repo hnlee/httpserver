@@ -25,20 +25,20 @@
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)
         method (msg :method)
-        uri (decode-uri (msg :uri))
-        path (str dir (msg :uri))]
+        uri (msg :uri)
+        decoded-uri (decode-uri uri)
+        path (str dir decoded-uri)]
     (cond
       (and (contains? router/routes 
                       method)
            (contains? (router/routes method) 
-                      uri)) (apply 
-                              response/compose
-                              ((router/routes method) uri)) 
+                      decoded-uri)) (apply response/compose
+                                           ((router/routes method) decoded-uri)) 
       ((complement nil?) 
         (parse-query uri)) (response/compose
                              200
                              {"Content-Type" "text/plain"}
-                             (parse-query uri))
+                             (decode-uri (parse-query uri)))
       (not-found? path) (response/compose 404)
       (= method "HEAD") (response/compose 200)
       (= method "GET") (response/compose 
