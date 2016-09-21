@@ -38,6 +38,11 @@
                                  "/%74%65%61"
                                  "" ""))
 
+(def query-request (format request-string
+                           "GET"
+                           "/form?my=data&your=data"
+                           "" ""))
+
 (def response-200 (format response-string
                                  200 "OK"))
 
@@ -54,6 +59,16 @@
     (is (not-found? "./nonsense")))
   (testing "Directory that exists"
     (is (not (not-found? "./src")))))
+
+(deftest test-parse-query
+  (testing "URI without query"
+    (is (nil? (parse-query "/form"))))
+  (testing "URI with query"
+    (is (= "my = data"
+           (parse-query "/form?my=data"))))
+  (testing "URI with multiple variables in query"
+    (is (= "my = data\r\nyour = data"
+           (parse-query "/form?my=data&your=data")))))
  
 (deftest test-decode-uri
   (testing "Decode URL-encoded characters in URI"
@@ -82,6 +97,11 @@
   (testing "URI with encoded characters is decoded"
     (is (= (response/compose 200)
            (choose-response encoded-tea-request ".")))) 
+  (testing "URI with query string returns variables"
+    (is (= (response/compose 200
+                             {"Content-Type" "text/plain"}
+                             "my = data\r\nyour = data")
+           (choose-response query-request ".")))) 
 )
 
 (deftest test-serve

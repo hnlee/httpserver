@@ -9,6 +9,13 @@
 (defn not-found? [path]
   (not (.exists (io/as-file path)))) 
 
+(defn parse-query [uri]
+  (if-let [query (re-find #"\?(.*)$" uri)]
+    (string/replace (string/replace (query 1) #"=" " = ")
+                    #"&"
+                    "\r\n")
+    nil))
+
 (defn decode-uri [uri]
   (string/replace uri 
                   #"(?i)%[0-9a-f]{2}"
@@ -27,6 +34,11 @@
                       uri)) (apply 
                               response/compose
                               ((router/routes method) uri)) 
+      ((complement nil?) 
+        (parse-query uri)) (response/compose
+                             200
+                             {"Content-Type" "text/plain"}
+                             (parse-query uri))
       (not-found? path) (response/compose 404)
       (= method "HEAD") (response/compose 200)
       (= method "GET") (response/compose 
