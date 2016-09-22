@@ -1,6 +1,6 @@
 (ns httpserver.core
   (:gen-class)
-  (:require [httpserver.operator :as operator]
+  (:require [httpserver.router :as router]
             [httpserver.socket :as socket]))
 
 (def default-port 5000)
@@ -23,7 +23,7 @@
         server (socket/open (vars :port))]
     (while true 
       (let [connection (socket/listen server)]
-        (try (operator/serve connection (vars :dir))
+        (try (router/serve connection (vars :dir))
              (finally (socket/close connection)))))
     (socket/close server))) 
 

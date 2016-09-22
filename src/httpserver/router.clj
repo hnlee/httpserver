@@ -1,41 +1,63 @@
 (ns httpserver.router
-  (:require [clojure.string :as string]
-            [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as string]
+            [httpserver.socket :as socket]
+            [httpserver.request :as request]
+            [httpserver.response :as response]
+            [httpserver.routes :as routes]))
 
-(def routes
-  {"GET" {"/redirect" [302 
-                       {"Location" 
-                        "http://localhost:5000/"}]
-          "/coffee" [418
-                     {}
-                     "I'm a teapot"]
-          "/tea" [200]
-         }
-   "PUT" {"/form" [200]} 
-   "POST" {"/form" [200]}
-   "OPTIONS" {"/method_options2" [200
-                                  {"Allow"
-                                   "GET,OPTIONS"}]
-              "/method_options" [200
-                                 {"Allow"
-                                  "GET,HEAD,POST,OPTIONS,PUT"}]
-              }
-  }
-) 
+(defn not-found? [path]
+  (not (.exists (io/as-file path)))) 
 
-(defn format-query [query]
-  (if (string? query) query 
-    (string/join "\r\n" (map #(str % " = " (query %))
-                             (keys query))))) 
+(defn decode-uri [uri]
+  (string/replace uri 
+                  #"(?i)%[0-9a-f]{2}"
+                  #(str (char (Integer/parseInt (subs % 1) 
+                                                16)))))
 
-(defn check-routes [method uri query]
-  (cond 
-    (and (contains? routes 
-                    method)
-         (contains? (routes method) 
-                    uri)) ((routes method) uri)
-    (and (= method "GET")
-         (= uri "/parameters")) [200
-                                {}
-                                (format-query query)]
-    :else nil))
+(defn parse-parameters [parameters]
+  (if (string/includes? 
+        parameters 
+        "=") (as-> parameters vars 
+                  (string/split vars #"&")
+                  (map #(string/split % #"=") vars)
+                  (reduce concat vars)
+                  (map decode-uri vars)
+                  (apply hash-map vars))
+    (decode-uri parameters)))
+ 
+(defn parse-query [uri]
+  (if-let [[uri base-uri query] 
+           (re-find #"(.*)\?(.*)$" uri)]
+    {:uri (decode-uri base-uri) 
+     :query (parse-parameters query)} 
+    {:uri (decode-uri uri)
+     :query ""}))
+
+(defn choose-response [client-request dir]
+  (let [{method :method
+         uri :uri} (request/parse client-request)
+        {decoded-uri :uri
+         parsed-query :query} (parse-query uri)
+        route (routes/check-routes method 
+                                   decoded-uri
+                                   parsed-query)
+        path (str dir decoded-uri)]
+    (cond
+      ((complement nil?) route) (apply response/compose 
+                                       route)
+      (not-found? path) (response/compose 404)
+      (= method "HEAD") (response/compose 200)
+      (= method "GET") (response/compose 
+                         200
+                         {"Content-Type" 
+                          (response/content-type path)}
+                         (response/content path)))
+))
+ 
+(defn serve [connection dir]
+  (let [client-request (socket/receive connection)
+        server-response (choose-response client-request
+                                         dir)]
+    (socket/give connection server-response)))
+
