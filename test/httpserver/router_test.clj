@@ -6,7 +6,7 @@
 (def request-string (str "%s %s HTTP/1.1\r\n"
                          "%s\r\n"
                          "\r\n"
-                         "%s\r\n"))
+                         "%s"))
 
 (def response-string (str "HTTP/1.1 %d %s\r\n"))
 

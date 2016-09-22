@@ -28,7 +28,8 @@
               client-in (io/reader client-socket)
               connection (socket/listen server)]
     (testing "Server sends response to request"
-      (.write client-out "HEAD /foobar HTTP/1.1\r\n\r\n")
+      (.write client-out (str "HEAD /foobar HTTP/1.1\r\n"
+                              "\r\n"))
       (.flush client-out)
       (serve connection ".")
       (is (= "HTTP/1.1 404 Not found"
