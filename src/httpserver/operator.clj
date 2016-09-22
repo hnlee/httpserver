@@ -16,20 +16,21 @@
                                                 16)))))
 
 (defn parse-parameters [parameters]
-  (if 
-    (string/includes?
-      parameters 
-      "=") (apply merge
-                  (map #(apply hash-map 
-                               (map decode-uri 
-                                    (string/split % #"=")))
-                       (string/split parameters #"&")))
-    parameters))
-
+  (if (string/includes? 
+        parameters 
+        "=") (as-> parameters vars 
+                  (string/split vars #"&")
+                  (map #(string/split % #"=") vars)
+                  (reduce concat vars)
+                  (map decode-uri vars)
+                  (apply hash-map vars))
+    (decode-uri parameters)))
+ 
 (defn parse-query [uri]
-  (if-let [uri-query (re-find #"(.*)\?(.*)$" uri)]
-    {:uri (decode-uri (uri-query 1))
-     :query (parse-parameters (uri-query 2))} 
+  (if-let [[uri base-uri query] 
+           (re-find #"(.*)\?(.*)$" uri)]
+    {:uri (decode-uri base-uri) 
+     :query (parse-parameters query)} 
     {:uri (decode-uri uri)
      :query ""}))
 
