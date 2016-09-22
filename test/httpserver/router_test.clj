@@ -39,6 +39,11 @@
                            "/parameters?my=data&your=data"
                            "" ""))
 
+(def bogus-request (format request-string
+                           "BOGUS"
+                           "/"
+                           "" ""))
+
 (def response-200 (format response-string
                                  200 "OK"))
 
@@ -121,5 +126,8 @@
                              {}
                              "my = data\r\nyour = data")
            (choose-response query-request ".")))) 
+  (testing "Return 405 to bogus request"
+    (is (= (response/compose 405)
+           (choose-response bogus-request "."))))
 )
 

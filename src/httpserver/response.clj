@@ -6,6 +6,7 @@
 
 (def reason-phrase {200 "OK"
                     404 "Not found"
+                    405 "Method not allowed"
                     418 "I'm a teapot"
                     302 "Found"})
 

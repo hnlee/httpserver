@@ -11,15 +11,16 @@
                      "I'm a teapot"]
           "/tea" [200]
          }
-   "PUT" {"/form" [200]} 
-   "POST" {"/form" [200]}
+   "PUT" {"/form" [200]
+          "/file1" [405]} 
+   "POST" {"/form" [200]
+           "/text-file.txt" [405]}
    "OPTIONS" {"/method_options2" [200
                                   {"Allow"
                                    "GET,OPTIONS"}]
               "/method_options" [200
                                  {"Allow"
-                                  "GET,HEAD,POST,OPTIONS,PUT"}]
-              }
+                                  "GET,HEAD,POST,OPTIONS,PUT"}]}
   }
 ) 
 
@@ -30,8 +31,7 @@
 
 (defn check-routes [method uri query]
   (cond 
-    (and (contains? routes 
-                    method)
+    (and (contains? routes method)
          (contains? (routes method) 
                     uri)) ((routes method) uri)
     (and (= method "GET")
