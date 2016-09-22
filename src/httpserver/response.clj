@@ -5,6 +5,7 @@
 (def status-line (str "%s %d %s\r\n"))
 
 (def reason-phrase {200 "OK"
+                    401 "Unauthorized"
                     404 "Not found"
                     405 "Method not allowed"
                     418 "I'm a teapot"

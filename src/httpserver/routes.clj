@@ -10,6 +10,9 @@
                      {}
                      "I'm a teapot"]
           "/tea" [200]
+          "/logs" [401
+                   {"WWW-Authenticate"
+                    "Basic realm=\"Admin\""}]
          }
    "PUT" {"/form" [200]
           "/file1" [405]} 
