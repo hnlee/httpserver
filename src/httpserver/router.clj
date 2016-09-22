@@ -1,7 +1,6 @@
 (ns httpserver.router
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [httpserver.socket :as socket]
             [httpserver.request :as request]
             [httpserver.response :as response]
             [httpserver.routes :as routes]))
@@ -34,9 +33,9 @@
     {:uri (decode-uri uri)
      :query ""}))
 
-(defn choose-response [client-request dir]
+(defn choose-response [client-msg dir]
   (let [{method :method
-         uri :uri} (request/parse client-request)
+         uri :uri} (request/parse client-msg)
         {decoded-uri :uri
          parsed-query :query} (parse-query uri)
         route (routes/check-routes method 
@@ -55,9 +54,4 @@
                          (response/content path)))
 ))
  
-(defn serve [connection dir]
-  (let [client-request (socket/receive connection)
-        server-response (choose-response client-request
-                                         dir)]
-    (socket/give connection server-response)))
 

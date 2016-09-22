@@ -1,6 +1,6 @@
-(ns httpserver.router-test
+(ns httpserver.routes-test
   (:require [clojure.test :refer :all]
-            [httpserver.router :refer :all]))
+            [httpserver.routes :refer :all]))
 
 (deftest test-format-query
   (testing "Format query with no parameters"

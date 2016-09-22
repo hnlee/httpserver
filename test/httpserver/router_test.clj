@@ -1,11 +1,7 @@
 (ns httpserver.router-test
-  (:import (java.net Socket))
   (:require [clojure.test :refer :all]
-            [clojure.string :as string]
-            [clojure.java.io :as io]
             [httpserver.router :refer :all]
-            [httpserver.response :as response]
-            [httpserver.socket :as socket]))
+            [httpserver.response :as response]))
 
 (def request-string (str "%s %s HTTP/1.1\r\n"
                          "%s\r\n"
@@ -127,17 +123,3 @@
            (choose-response query-request ".")))) 
 )
 
-(deftest test-serve
-  (with-open [server (socket/open 5000)
-              client-socket (Socket. "localhost" 5000)
-              client-out (io/writer client-socket)
-              client-in (io/reader client-socket)
-              connection (socket/listen server)]
-    (testing "Server sends response to request"
-      (.write client-out invalid-head-request)
-      (.flush client-out)
-      (serve connection ".")
-      (is (= (string/trim-newline response-404)
-             (.readLine client-in))))
-
-))

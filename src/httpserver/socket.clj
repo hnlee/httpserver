@@ -24,10 +24,9 @@
              (.readLine reader))))) 
 
 (defn read-body [head reader]
-  (let [length (Integer. ((re-find 
-                            #"[Cc]ontent-[Ll]ength: ?(\d+)"
-                            head) 1))]
-    (apply str (for [n (range length)] 
+  (let [[all length]
+        (re-find #"[Cc]ontent-[Ll]ength: ?(\d+)" head)]
+    (apply str (for [n (range (Integer. length))] 
                  (char (.read reader))))))
 
 (defn receive [connection]
