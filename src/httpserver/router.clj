@@ -1,5 +1,6 @@
 (ns httpserver.router
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.string :as string]
+            [clojure.java.io :as io]))
 
 (def routes
   {"GET" {"/redirect" [302 
@@ -21,3 +22,20 @@
               }
   }
 ) 
+
+(defn format-query [query]
+  (if (string? query) query 
+    (string/join "\r\n" (map #(str % " = " (query %))
+                             (keys query))))) 
+
+(defn check-routes [method uri query]
+  (cond 
+    (and (contains? routes 
+                    method)
+         (contains? (routes method) 
+                    uri)) ((routes method) uri)
+    (and (= method "GET")
+         (= uri "/parameters")) [200
+                                {}
+                                (format-query query)]
+    :else nil))

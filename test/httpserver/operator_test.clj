@@ -60,14 +60,30 @@
   (testing "Directory that exists"
     (is (not (not-found? "./src")))))
 
+(deftest test-parse-parameters
+  (testing "Query with no parameters"
+    (is (= "data"
+           (parse-parameters "data"))))
+  (testing "Query with single parameter"
+    (is (= {"my" "data"}
+           (parse-parameters "my=data"))))
+  (testing "Query with multiple parameters"
+    (is (= {"my" "data"
+            "your" "data"}
+           (parse-parameters "my=data&your=data")))))
+
 (deftest test-parse-query
   (testing "URI without query"
-    (is (nil? (parse-query "/form"))))
+    (is (= {:uri "/form"
+            :query ""}
+           (parse-query "/form"))))
   (testing "URI with query"
-    (is (= "my = data"
+    (is (= {:uri "/form" 
+            :query (parse-parameters "my=data")} 
            (parse-query "/form?my=data"))))
   (testing "URI with multiple variables in query"
-    (is (= "my = data\r\nyour = data"
+    (is (= {:uri "/form"
+            :query (parse-parameters "my=data&your=data")}
            (parse-query "/form?my=data&your=data")))))
  
 (deftest test-decode-uri
@@ -97,11 +113,6 @@
   (testing "URI with encoded characters is decoded"
     (is (= (response/compose 200)
            (choose-response encoded-tea-request ".")))) 
-  (testing "URI with query string returns variables"
-    (is (= (response/compose 200
-                             {"Content-Type" "text/plain"}
-                             "my = data\r\nyour = data")
-           (choose-response query-request ".")))) 
 )
 
 (deftest test-serve

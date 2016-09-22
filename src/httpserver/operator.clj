@@ -9,36 +9,42 @@
 (defn not-found? [path]
   (not (.exists (io/as-file path)))) 
 
-(defn parse-query [uri]
-  (if-let [query (re-find #"\?(.*)$" uri)]
-    (string/replace (string/replace (query 1) #"=" " = ")
-                    #"&"
-                    "\r\n")
-    nil))
-
 (defn decode-uri [uri]
   (string/replace uri 
                   #"(?i)%[0-9a-f]{2}"
                   #(str (char (Integer/parseInt (subs % 1) 
                                                 16)))))
 
+(defn parse-parameters [parameters]
+  (if 
+    (string/includes?
+      parameters 
+      "=") (apply merge
+                  (map #(apply hash-map 
+                               (map decode-uri 
+                                    (string/split % #"=")))
+                       (string/split parameters #"&")))
+    parameters))
+
+(defn parse-query [uri]
+  (if-let [uri-query (re-find #"(.*)\?(.*)$" uri)]
+    {:uri (decode-uri (uri-query 1))
+     :query (parse-parameters (uri-query 2))} 
+    {:uri (decode-uri uri)
+     :query ""}))
+
 (defn choose-response [client-request dir]
   (let [msg (request/parse client-request)
         method (msg :method)
         uri (msg :uri)
-        decoded-uri (decode-uri uri)
-        path (str dir decoded-uri)]
+        uri-query (parse-query uri)
+        route (router/check-routes method 
+                                   (uri-query :uri) 
+                                   (uri-query :query))
+        path (str dir (uri-query :uri))]
     (cond
-      (and (contains? router/routes 
-                      method)
-           (contains? (router/routes method) 
-                      decoded-uri)) (apply response/compose
-                                           ((router/routes method) decoded-uri)) 
-      ((complement nil?) 
-        (parse-query uri)) (response/compose
-                             200
-                             {"Content-Type" "text/plain"}
-                             (decode-uri (parse-query uri)))
+      ((complement nil?) route) (apply response/compose 
+                                       route)
       (not-found? path) (response/compose 404)
       (= method "HEAD") (response/compose 200)
       (= method "GET") (response/compose 
