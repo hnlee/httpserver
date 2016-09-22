@@ -34,14 +34,14 @@
      :query ""}))
 
 (defn choose-response [client-request dir]
-  (let [msg (request/parse client-request)
-        method (msg :method)
-        uri (msg :uri)
-        uri-query (parse-query uri)
+  (let [{method :method
+         uri :uri} (request/parse client-request)
+        {decoded-uri :uri
+         parsed-query :query} (parse-query uri)
         route (router/check-routes method 
-                                   (uri-query :uri) 
-                                   (uri-query :query))
-        path (str dir (uri-query :uri))]
+                                   decoded-uri
+                                   parsed-query)
+        path (str dir decoded-uri)]
     (cond
       ((complement nil?) route) (apply response/compose 
                                        route)
