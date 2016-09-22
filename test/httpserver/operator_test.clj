@@ -40,7 +40,7 @@
 
 (def query-request (format request-string
                            "GET"
-                           "/form?my=data&your=data"
+                           "/parameters?my=data&your=data"
                            "" ""))
 
 (def response-200 (format response-string
@@ -120,6 +120,11 @@
   (testing "URI with encoded characters is decoded"
     (is (= (response/compose 200)
            (choose-response encoded-tea-request ".")))) 
+  (testing "URI with query string is parsed"
+    (is (= (response/compose 200
+                             {}
+                             "my = data\r\nyour = data")
+           (choose-response query-request ".")))) 
 )
 
 (deftest test-serve
