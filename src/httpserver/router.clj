@@ -48,12 +48,14 @@
 
 (defn choose-response [client-msg dir]
   (let [{method :method
-         uri :uri} (request/parse client-msg)
+         uri :uri
+         headers :headers} (request/parse client-msg)
         {decoded-uri :uri
          parsed-query :query} (parse-query uri)
         route (routes/check-routes method 
                                    decoded-uri
-                                   parsed-query)
+                                   parsed-query
+                                   headers)
         path (str dir decoded-uri)]
     (cond
       (not-allowed? method) (response/compose 405)
