@@ -15,6 +15,9 @@
     "TRACE" 
     "CONNECT"})
 
+(defn not-allowed? [method]
+  (not (contains? http-methods method)))
+
 (defn not-found? [path]
   (not (.exists (io/as-file path)))) 
 
@@ -53,8 +56,7 @@
                                    parsed-query)
         path (str dir decoded-uri)]
     (cond
-      ((complement contains?) http-methods 
-                              method) (response/compose 405)
+      (not-allowed? method) (response/compose 405)
       ((complement nil?) route) (apply response/compose 
                                        route)
       (not-found? path) (response/compose 404)
