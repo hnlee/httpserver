@@ -1,6 +1,6 @@
 (ns httpserver.routes-test
-  (:import (java.util Base64))
   (:require [clojure.test :refer :all]
+            [httpserver.authentication :as auth]
             [httpserver.routes :refer :all]))
 
 (deftest test-parameters?
@@ -11,47 +11,15 @@
   (testing "Return false if not /parameters"
     (is (not (parameters? "GET" "/")))))
 
-(deftest test-restricted?
-  (testing "Return true if GET for /logs"
-    (is (restricted? "GET" "/logs")))
-  (testing "Return false if not a GET request"
-    (is (not (restricted? "PUT" "/logs"))))
-  (testing "Return false if not /logs"
-    (is (not (restricted? "GET" "/")))))
-
-(deftest test-encode-base64
-  (testing "Encode empty string"
-    (is (= ""
-           (encode-base64 ""))))
-  (testing "Encode a string"
-    ; Example taken from HTTP spec on basic authorization
-    (is (= "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
-           (encode-base64 "Aladdin:open sesame")))))
-
-(deftest test-decode-base64
-  (testing "Decode empty string"
-    (is (= ""
-           (decode-base64 ""))))
-  (testing "Decode base64 string"
-    (let [encoded (encode-base64 "admin")] 
-      (is (= "admin"
-             (decode-base64 encoded))))))
-
-(deftest test-authentication
-  (testing "Return 401 if no authentication in header"
-    (is (= [401 {"WWW-Authenticate"
-                 "Basic realm=\"Admin\""}]
-           (authentication {}))))
-  (testing "Return 401 if incorrect authentication"
-    (is (= [401 {"WWW-Authenticate"
-                 "Basic realm=\"Admin\""}]
-           (authentication {"Authorization"
-                            "Basic random-string"})))) 
-  (testing "Return 200 if correct authentication"
-    (is (= [200]
-           (authentication {"Authorization"
-                            (str "Basic "
-                                 (encode-base64 "admin:hunter2"))})))))
+(deftest test-restricted
+  (testing "Return credentials if GET for /logs"
+    (is (= "admin:hunter2"
+           (auth/decode-base64 (restricted "GET" 
+                                           "/logs")))))
+  (testing "Return nil if not a GET request"
+    (is (nil? (restricted "PUT" "/logs"))))
+  (testing "Return nil if not a restricted URI"
+    (is (nil? (restricted "GET" "/")))))
 
 (deftest test-format-query
   (testing "Format query with no parameters"
@@ -77,14 +45,7 @@
                          {"my" "data"
                           "your" "data"}
                          {}))))
-  (testing "Requesting logs without authentication"
-    (is (= [401 {"WWW-Authenticate"
-                 "Basic realm=\"Admin\""}] 
-           (check-routes "GET"
-                         "/logs"
-                         ""
-                         {}))))  
-  (testing "Not in defined route"
+ (testing "Not in defined route"
     (is (nil? (check-routes "GET" 
                             "/not_a_route"
                             ""

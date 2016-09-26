@@ -1,6 +1,9 @@
 (ns httpserver.router-test
   (:require [clojure.test :refer :all]
             [httpserver.router :refer :all]
+            [httpserver.authentication :as auth]
+            [httpserver.routes :as routes]
+            [httpserver.request :as request]
             [httpserver.response :as response]))
 
 (def request-string (str "%s %s HTTP/1.1\r\n"
@@ -26,7 +29,7 @@
 
 (def text-get-request (format request-string
                               "GET"
-                              "/test/httpserver/public/file1"
+                              "/file1"
                               "" ""))
 
 (def encoded-tea-request (format request-string
@@ -43,6 +46,21 @@
                            "BOGUS"
                            "/"
                            "" ""))
+
+(def restricted-request-without-credentials
+  (format request-string
+          "GET"
+          "/logs"
+          "" ""))
+
+(def restricted-request-with-credentials
+  (format request-string
+          "GET"
+          "/logs"
+          (str "Authorization: Basic "
+               (auth/encode-base64 "admin:hunter2"))
+          ""))
+
 
 (def response-200 (format response-string
                                  200 "OK"))
@@ -101,6 +119,49 @@
     (is (= " <, >"
            (decode-uri "%20%3C%2C%20%3E")))))
 
+(deftest test-standard-get
+  (testing "Return 200 with requested URI content in msg body"
+    (is (= (response/compose 200
+                             {}
+                             (response/content "./"))
+           (standard-get "./")))))
+
+(deftest test-credentials?
+  (testing "No credentials in header"
+    (is (not (credentials? {} "username:password"))))
+  (testing "Incorrect credentials in header"
+    (is (not (credentials? {"Authorization"
+                            "Basic random-string"}
+                           "username:password"))))
+  (testing "Correct credentials in header"
+    (is (credentials? {"Authorization"
+                       "Basic username:password"}
+                      "username:password"))))
+
+(deftest test-authorize
+  (testing "Return 401 if no credentials in header"
+    (is (= (response/compose 401 
+                             {"WWW-Authenticate"
+                              "Basic realm=\"Admin\""})
+           (authorize {} 
+                      "username:password"
+                      "/"))))
+  (testing "Return 401 if incorrect credentials"
+    (is (= (response/compose 401
+                             {"WWW-Authenticate"
+                              "Basic realm=\"Admin\""})
+           (authorize {"Authorization"
+                       "Basic random-string"}
+                      "username:password"
+                      "/")))) 
+  (testing "Return 200 if correct credentials"
+    (is (= (standard-get "/") 
+           (authorize {"Authorization"
+                       "Basic username:password"}
+                      "username:password"
+                      "/")))))
+           
+
 (deftest test-choose-response
   (testing "Invalid URI returns 404 response"
     (is (= (response/compose 404) 
@@ -114,10 +175,9 @@
     (is (= (response/compose 200)
             (choose-response valid-head-request "."))))
   (testing "GET on text file returns content in body"
-    (is (= (response/compose 200
-                              {"Content-Type" "text/plain"}
-                              "file1 contents")
-            (choose-response text-get-request "."))))
+    (is (= (standard-get "test/httpserver/public/file1")
+           (choose-response text-get-request
+                            "test/httpserver/public"))))
   (testing "URI with encoded characters is decoded"
     (is (= (response/compose 200)
            (choose-response encoded-tea-request ".")))) 
@@ -129,5 +189,15 @@
   (testing "Return 405 to bogus request"
     (is (= (response/compose 405)
            (choose-response bogus-request "."))))
-)
-
+  (testing "Return 401 to /logs without credentials"
+    (is (= (response/compose 401
+                             {"WWW-Authenticate"
+                              "Basic realm=\"Admin\""})
+           (choose-response 
+             restricted-request-without-credentials 
+             "."))))
+  (testing "Return 200 and content to /logs with credentials"
+    (is (= (standard-get "test/httpserver/public/logs")
+           (choose-response
+             restricted-request-with-credentials
+             "test/httpserver/public")))))

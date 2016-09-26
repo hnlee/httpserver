@@ -1,6 +1,6 @@
 (ns httpserver.routes
-  (:import [java.util Base64])
-  (:require [clojure.string :as string]
+  (:require [httpserver.authentication :as auth] 
+            [clojure.string :as string]
             [clojure.java.io :as io]))
 
 (def static-routes
@@ -24,29 +24,10 @@
   (and (= method "GET")
        (= uri "/parameters")))
 
-(defn restricted? [method uri]
-  (and (= method "GET")
-       (= uri "/logs")))
-
-(defn decode-base64 [encoded-string]
-  (let [decoder (Base64/getDecoder)]
-    (string/join "" 
-                 (map char 
-                      (.decode decoder encoded-string)))))
-
-(defn encode-base64 [decoded-string]
-  (let [encoder (Base64/getEncoder)]
-    (.encodeToString encoder  
-                     (byte-array (map (comp byte int)
-                                      decoded-string)))))
-
-(defn authentication [headers]
-  (if (and (contains? headers "Authorization")
-           (= (headers "Authorization")
-              (str "Basic "
-                   (encode-base64 "admin:hunter2")))) [200]
-    [401 {"WWW-Authenticate"
-          "Basic realm=\"Admin\""}]))
+(defn restricted [method uri]
+  (if (and (= method "GET")
+           (= uri "/logs")) (auth/encode-base64 
+                              "admin:hunter2")))
 
 (defn format-query [query]
   (if (string? query) query 
@@ -61,5 +42,4 @@
     (parameters? method uri) [200
                               {}
                               (format-query query)]
-    (restricted? method uri) (authentication headers) 
     :else nil))

@@ -1,3 +1,6 @@
+logs
+test/httpserver/public/logs
+
 *.DS_Store
 .AppleDouble
 .LSOverride

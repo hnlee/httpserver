@@ -46,6 +46,23 @@
     {:uri (decode-uri uri)
      :query ""}))
 
+(defn standard-get [path]
+  (response/compose 200
+                    {}
+                    (response/content path)))
+
+(defn credentials? [headers credentials]
+  (and (contains? headers "Authorization")
+       (= (headers "Authorization")
+          (str "Basic " credentials))))
+
+(defn authorize [headers credentials path]
+  (if (credentials? headers
+                    credentials) (standard-get path)
+   (response/compose 401
+                     {"WWW-Authenticate"
+                      "Basic realm=\"Admin\""}))) 
+
 (defn choose-response [client-msg dir]
   (let [{method :method
          uri :uri
@@ -56,18 +73,17 @@
                                    decoded-uri
                                    parsed-query
                                    headers)
+        credentials (routes/restricted method
+                                       decoded-uri)
         path (str dir decoded-uri)]
     (cond
       (not-allowed? method) (response/compose 405)
       ((complement nil?) route) (apply response/compose 
                                        route)
+      ((complement nil?) credentials) (authorize headers
+                                                 credentials
+                                                 path)
       (not-found? path) (response/compose 404)
       (= method "HEAD") (response/compose 200)
-      (= method "GET") (response/compose 
-                         200
-                         {"Content-Type" 
-                          (response/content-type path)}
-                         (response/content path)))
-))
- 
+      (= method "GET") (standard-get path))))
 
