@@ -33,6 +33,11 @@
            (format-query {"my" "data"
                           "your" "data"})))))
 
+(deftest test-route?
+  (testing "Not a route"
+    (is (not (route? "GET" "/notaroute"))))
+  (testing "Is a route"
+    (is (route? "GET" "/tea"))))
 
 (deftest test-check-routes
   (testing "Hard-coded route"

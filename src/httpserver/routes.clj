@@ -34,11 +34,13 @@
     (string/join "\r\n" (map #(str % " = " (query %))
                              (keys query)))))
 
+(defn route? [method uri]
+  (and (contains? static-routes method)
+       (contains? (static-routes method) uri)))
+
 (defn check-routes [method uri query headers]
   (cond 
-    (and (contains? static-routes method)
-         (contains? (static-routes method) 
-                    uri)) ((static-routes method) uri)
+    (route? method uri) ((static-routes method) uri)
     (parameters? method uri) [200
                               {}
                               (format-query query)]
