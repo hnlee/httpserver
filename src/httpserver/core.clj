@@ -1,6 +1,7 @@
 (ns httpserver.core
   (:gen-class)
   (:require [httpserver.router :as router]
+            [httpserver.logging :as logging]
             [httpserver.socket :as socket]))
 
 (def default-port 5000)
@@ -15,10 +16,11 @@
      :dir (get-in flags ["-d"] default-dir)}))
 
 (defn serve [connection dir]
-  (let [client-msg (socket/receive connection)
-        server-msg (router/choose-response client-msg 
-                                           dir)]
-    (socket/give connection server-msg)))
+  (let [client-msg (socket/receive connection)]
+    (logging/log-request client-msg dir)
+    (socket/give connection
+                 (router/choose-response client-msg
+                                         dir))))
 
 (defn -main [& args]
   (let [vars (set-vars args)
@@ -28,4 +30,3 @@
         (try (serve connection (vars :dir))
              (finally (socket/close connection)))))
     (socket/close server))) 
-

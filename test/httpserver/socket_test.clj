@@ -28,12 +28,13 @@
       (is (.isConnected client-socket)))))
 
 (def single-line-request (str "GET / HTTP/1.1\r\n"
+                              "\r\n"
                               "\r\n"))
 
 (def multi-line-request (str "PUT /form HTTP/1.1\r\n"
-                             "Content-Length: 9\r\n"
+                             "Content-Length: 7\r\n"
                              "\r\n"
-                             "My=Data\r\n"))
+                             "My=Data"))
 
 (deftest test-body?
   (testing "Request with no Content-Length header"
@@ -41,25 +42,38 @@
   (testing "Request with Content-Length header" 
     (is (body? multi-line-request))))
 
-(deftest test-read-head
-  (testing "Request with no head"
+(deftest test-read-request-line
+  (testing "Get request line from request with no headers"
     (with-open [input (StringReader. single-line-request)
                 stream (io/reader input)]
       (is (= "GET / HTTP/1.1\r\n" 
-             (read-head stream)))))
-  (testing "Request with head"
+             (read-request-line stream)))))
+  (testing "Get request line from request with headers"
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
-      (is (= (str "PUT /form HTTP/1.1\r\n"
-                  "Content-Length: 9\r\n") 
-             (read-head stream))))))
+      (is (= "PUT /form HTTP/1.1\r\n" 
+             (read-request-line stream))))))
+
+(deftest test-read-headers
+  (testing "Request with no headers"
+    (with-open [input (StringReader. single-line-request)
+                stream (io/reader input)]
+      (read-request-line stream)
+      (is (= "\r\n" 
+             (read-headers stream)))))
+  (testing "Request with headers"
+    (with-open [input (StringReader. multi-line-request)
+                stream (io/reader input)]
+      (read-request-line stream)
+      (is (= (str "Content-Length: 7\r\n") 
+             (read-headers stream))))))
 
 (deftest test-read-body
   (testing "Read message body from request"
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
-      (is (= "My=Data\r\n" 
-             (read-body (read-head stream) stream))))))
+      (is (= "My=Data" 
+             (read-body (read-headers stream) stream))))))
 
 (deftest test-receive
   (with-open [server-socket (open 5000)

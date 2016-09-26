@@ -100,7 +100,7 @@
   (testing "Decode multiple encoded characters" 
     (is (= " <, >"
            (decode-uri "%20%3C%2C%20%3E")))))
-  
+
 (deftest test-choose-response
   (testing "Invalid URI returns 404 response"
     (is (= (response/compose 404) 

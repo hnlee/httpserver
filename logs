@@ -1,0 +1,270 @@
+HEAD /foobar HTTP/1.1
+
+HEAD /foobar HTTP/1.1
+
+HEAD /foobar HTTP/1.1
+
+HEAD /foobar HTTP/1.1
+
+HEAD /foobar HTTP/1.1
+
+GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+2016-09-26T11:47:39.790HEAD /foobar HTTP/1.1
+
+2016-09-26T11:49:34.844HEAD /foobar HTTP/1.1
+
+2016-09-26T11:49:49.561HEAD /foobar HTTP/1.1
+
+2016-09-26T11:50:25.782HEAD /foobar HTTP/1.1
+
+2016-09-26T11:51:12.357HEAD /foobar HTTP/1.1
+
+2016-09-26T11:52:17.645HEAD /foobar HTTP/1.1
+
+2016-09-26T11:54:48.903HEAD /foobar HTTP/1.1
+
+2016-09-26T11:55:39.399GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+2016-09-26T11:58:57.765HEAD /foobar HTTP/1.1
+
+2016-09-26T11:59:46.932HEAD /foobar HTTP/1.1
+
+2016-09-26T12:00:30.676HEAD /foobar HTTP/1.1
+
+2016-09-26T12:00:45.775HEAD /foobar HTTP/1.1
+
+2016-09-26T12:04:21.060HEAD /foobar HTTP/1.1
+
+2016-09-26T12:05:48.856HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:06:54.545
+HEAD /foobar HTTP/1.1
+
+2016-09-26T12:07:41.273HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:09:04.574HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:09:50.690HEAD /foobar HTTP/1.1
+
+2016-09-26T12:10:39.341HEAD /foobar HTTP/1.1
+
+2016-09-26T12:11:37.677HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:12:39.893GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+
+2016-09-26T12:14:06.178HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:14:40.061HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:15:09.295GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+
+2016-09-26T12:16:18.140: GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+
+2016-09-26T12:18:29.646: GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+
+2016-09-26T12:19:15.051: GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+
+2016-09-26T12:19:15.094: GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+
+2016-09-26T12:19:15.102: GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+
+2016-09-26T12:25:48.444: HEAD /foobar HTTP/1.1
+
+
+
+2016-09-26T12:26:21.013: HEAD /foobar HTTP/1.1
+
+
+
+2016-09-26T12:27:49.868: HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:28:58.948: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:31:50.896: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:32:07.058: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:33:21.814: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:33:58.356: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:34:32.386: HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:35:46.477: HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:36:56.508: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:42:50.974: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:49:15.903: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:49:57.210: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:52:54.537: HEAD /foobar HTTP/1.1
+2016-09-26T12:56:08.366: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:56:33.386: HEAD /foobar HTTP/1.1
+
+2016-09-26T12:56:59.682: HEAD /foobar HTTP/1.1
+
+
+2016-09-26T12:58:41.498: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:00:36.323: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:01:43.164: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:02:02.345: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:02:21.927: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:02:38.640: GET / HTTP/1.1
+Host: localhost:5000
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: en-US,en;q=0.8
+Cookie: textwrapon=false; wysiwyg=textarea
+
+---2016-09-26T13:06:12.845: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:06:57.554: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:07:11.666: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:07:49.241: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:09:24.932: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:31:10.513: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:33:24.764: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:50:06.075: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:51:26.586: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:58:47.449: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T13:58:58.016: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T14:02:35.955: HEAD /foobar HTTP/1.1
+
+
+---2016-09-26T14:03:38.019: HEAD /foobar HTTP/1.1
+
+
+---

@@ -29,6 +29,7 @@
               connection (socket/listen server)]
     (testing "Server sends response to request"
       (.write client-out (str "HEAD /foobar HTTP/1.1\r\n"
+                              "\r\n"
                               "\r\n"))
       (.flush client-out)
       (serve connection ".")
