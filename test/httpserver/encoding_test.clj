@@ -18,6 +18,20 @@
     (is (= " <, >"
            (decode-uri "%20%3C%2C%20%3E")))))
 
+(deftest test-encode-uri
+  (testing "Encode alphanumeric URL"
+    (is (= "/form"
+           (encode-uri "/form"))))
+  (testing "Encode space"
+    (is (= "%20"
+           (encode-uri " ")))) 
+  (testing "Encode <"
+    (is (= "%3C"
+           (encode-uri "<"))))
+  (testing "Encode multiple non-alphanumeric characters"
+    (is (= "%20%3C%2C%20%3E"
+           (encode-uri " <, >")))))
+
 (deftest test-encode-base64
   (testing "Encode empty string"
     (is (= ""

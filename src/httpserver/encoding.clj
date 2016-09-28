@@ -8,6 +8,18 @@
                   #(str (char (Integer/parseInt (subs % 1) 
                                                 16)))))
 
+(defn encode-uri [uri]
+  (string/replace 
+    uri 
+    #"[^\w/]+"
+    (fn [unencoded]
+      (->> unencoded
+           (map (comp int char))
+           (map #(Integer/toHexString %))
+           (map string/upper-case)
+           (map #(str "%" %)) 
+           (string/join "")))))
+
 (defn decode-base64 [encoded-string]
   (let [decoder (Base64/getDecoder)]
     (string/join "" 
