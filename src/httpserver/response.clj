@@ -1,5 +1,6 @@
 (ns httpserver.response
   (:require [httpserver.file :as file] 
+            [httpserver.encoding :as code]
             [clojure.java.io :as io]
             [clojure.string :as string]))
 
@@ -24,9 +25,6 @@
   (apply str 
          (for [header (keys headers-map)]
            (str header ": " (headers-map header) "\r\n"))))
-
-(defn str->bytes [string]
-  (map (comp byte int) string))
 
 (defn linkify [paths]
   (string/join (map #(str "<a href=\"/"
@@ -72,13 +70,15 @@
 (defn compose 
   "Option to provide headers and message body in params"
   ([status-code] 
-    (str->bytes (format-status-line status-code))) 
+    (code/str->bytes (format-status-line status-code))) 
   ([status-code headers-map]
     (concat (compose status-code)
-            (str->bytes (str (format-headers headers-map)
-                             "\r\n"))))
+            (code/str->bytes 
+              (str (format-headers headers-map)
+                   "\r\n"))))
   ([status-code headers-map body]
-   (let [msg-body (if (string? body) (str->bytes body) body)]
+   (let [msg-body (if (string? body) (code/str->bytes body) 
+                    body)]
      (if (contains? 
            headers-map 
            "Content-Length") (concat (compose status-code

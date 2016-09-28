@@ -1,6 +1,7 @@
 (ns httpserver.response-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
+            [httpserver.encoding :as code]
             [httpserver.response :refer :all]))
 
 (def response-string (str "HTTP/1.1 %d %s\r\n"))
@@ -26,7 +27,7 @@
 (deftest test-content
   (testing "Return text file content"
     (let [path "test/httpserver/public/file1"]
-      (is (= (str->bytes "file1 contents") 
+      (is (= (code/str->bytes "file1 contents") 
              (content path)))))
   (testing "Return image file content"
     (let [path "test/httpserver/public/image.jpeg"
@@ -69,29 +70,24 @@
        (format-headers {"Allow" "GET" 
                         "Content-Length" 10}))))
 
-(deftest test-str->bytes
-  (testing "Convert string to byte array"
-    (= (map (comp byte int) (range 97 102))
-       (str->bytes "abc"))))
-
 (deftest test-compose
   (testing "Return 200 status code"
-    (is (= (str->bytes 
+    (is (= (code/str->bytes 
              (format response-string 200 "OK"))
            (compose 200))))
   (testing "Return 404 status code"
-    (is (= (str->bytes 
+    (is (= (code/str->bytes 
              (format response-string 404 "Not found"))
            (compose 404))))
   (testing "Return 200 status code with Allows header"
-    (is (= (str->bytes 
+    (is (= (code/str->bytes 
              (str (format response-string 200 "OK")
                   "Allow: GET,HEAD,POST,OPTIONS,PUT"
                   "\r\n\r\n"))         
            (compose 200
                     {"Allow" "GET,HEAD,POST,OPTIONS,PUT"}))))
   (testing "Return 418 status code with Content-Length header and message body"
-    (is (= (str->bytes 
+    (is (= (code/str->bytes 
              (str (format response-string 418 "I'm a teapot")
                   "Content-Length: 12\r\n"
                   "\r\n"

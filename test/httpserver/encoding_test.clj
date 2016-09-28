@@ -4,6 +4,24 @@
             [httpserver.encoding :refer :all]
             [httpserver.response :as response]))
 
+(deftest test-str->bytes
+  (testing "Convert string to byte array"
+    (= (map (comp byte int) (range 97 102))
+       (str->bytes "abc"))))
+
+(deftest test-bytes->str
+  (testing "Convert bytes to string"
+    (is (= "hello"
+           (bytes->str (str->bytes "hello"))))))
+
+(deftest test-bytes->hex
+  (testing "Convert single byte to hexstring"
+    (is (= "0f"
+           (bytes->hex (repeat 1 (byte 15))))))
+  (testing "Convert seq of bytes to hexstring"
+    (is (= "0f0f"
+           (bytes->hex (repeat 2 (byte 15)))))))
+
 (deftest test-decode-uri
   (testing "Decode non-encoded URL"
     (is (= "/form"
@@ -50,3 +68,7 @@
       (is (= "admin"
              (decode-base64 encoded))))))
 
+(deftest test-encode-sha1
+  (testing "Encode SHA1 string"
+    (is (= "dc50a0d27dda2eee9f65644cd7e4c9cf11de8bec"
+           (encode-sha1 "default content")))))
