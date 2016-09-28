@@ -1,10 +1,13 @@
 (ns httpserver.response
-  (:require [clojure.java.io :as io]
+  (:require [httpserver.file :as file] 
+            [clojure.java.io :as io]
             [clojure.string :as string]))
 
 (def status-line (str "%s %d %s\r\n"))
 
 (def reason-phrase {200 "OK"
+                    204 "No content"
+                    206 "Partial content"
                     401 "Unauthorized"
                     404 "Not found"
                     405 "Method not allowed"
@@ -42,22 +45,26 @@
 (defn ls [path]
   (apply list (.list (io/as-file path))))
 
-(defn directory? [path]
-  (.isDirectory (io/as-file path)))
-
-(defn content [path]
-  (if (directory? path)
-    (let [[all dir] (re-find #".*(/.*?)$" path)]
-      (htmlify (str "Index of " dir)
-               (linkify (ls path))))
-    (let [file (io/as-file path)]
-      (with-open [stream (io/input-stream file)] 
-        (vec (repeatedly (.length file) 
-                         #(.read stream)))))))
+(defn content 
+  ;Option to supply indices for partial content
+  ([path]
+    (if (file/directory? path)
+      (let [[all dir] (re-find #".*(/.*?)$" path)]
+        (htmlify (str "Index of " dir)
+                 (linkify (ls path))))
+      (let [file (io/as-file path)]
+        (with-open [stream (io/input-stream file)] 
+          (vec (repeatedly (.length file) 
+                           #(.read stream)))))))
+  ([path start end]
+   (cond 
+     (nil? end) (subvec (content path) start)
+     (nil? start) (vec (take-last end (content path))) 
+     :else (subvec (content path) start (inc end)))))
 
 (defn content-type [path]
   (cond 
-    (directory? path) "text/html"
+    (file/directory? path) "text/html"
     ((complement nil?) 
       (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg" 
     :else "text/plain"))

@@ -5,12 +5,6 @@
 
 (def response-string (str "HTTP/1.1 %d %s\r\n"))
 
-(deftest test-directory?
-  (testing "Path to a directory"
-    (is (directory? "./src")))
-  (testing "Path to a file"
-    (is (not (directory? "./project.clj")))))
-
 (deftest test-ls
   (testing "Get contents of a directory"
     (is (= (apply list (.list (io/as-file "./")))
@@ -32,7 +26,7 @@
 (deftest test-content
   (testing "Return text file content"
     (let [path "test/httpserver/public/file1"]
-      (is (= (map (comp byte int) "file1 contents") 
+      (is (= (str->bytes "file1 contents") 
              (content path)))))
   (testing "Return image file content"
     (let [path "test/httpserver/public/image.jpeg"
@@ -41,7 +35,18 @@
         (is (= (vec (repeatedly (.length file)
                                 #(.read stream))) 
                (content path))))))
-)
+  (testing "Return partial file content with both indices"
+    (let [path "test/httpserver/public/partial_content.txt"]
+      (is (= (subvec (content path) 0 5)
+             (content path 0 4)))))
+  (testing "Return partial file content with only start index"
+    (let [path "test/httpserver/public/partial_content.txt"]
+      (is (= (subvec (content path) 4)
+             (content path 4 nil)))))
+  (testing "Return partial file content with only end index"
+    (let [path "test/httpserver/public/partial_content.txt"]
+      (is (= (vec (take-last 6 (content path)))
+             (content path nil 6))))))
 
 (deftest test-content-type
   (testing "Plain text content"

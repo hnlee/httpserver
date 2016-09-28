@@ -1,7 +1,7 @@
 (ns httpserver.router-test
   (:require [clojure.test :refer :all]
             [httpserver.router :refer :all]
-            [httpserver.authentication :as auth]
+            [httpserver.encoding :as code]
             [httpserver.routes :as routes]
             [httpserver.request :as request]
             [httpserver.response :as response]))
@@ -61,6 +61,11 @@
                (auth/encode-base64 "admin:hunter2"))
           ""))
 
+(def partial-get-request (format request-string
+                                 "GET"
+                                 "/partial_content.txt"
+                                 "Range: bytes=0-4" 
+                                 ""))
 
 (def response-200 (format response-string
                                  200 "OK"))
@@ -70,14 +75,6 @@
 
 (def response-418 (format response-string
                           418 "I'm a teapot"))
-
-(deftest test-not-found? 
-  (testing "File that exists"
-    (is (not (not-found? "./project.clj"))))
-  (testing "File that does not exist"
-    (is (not-found? "./nonsense")))
-  (testing "Directory that exists"
-    (is (not (not-found? "./src")))))
 
 (deftest test-parse-parameters
   (testing "Query with no parameters"
@@ -160,7 +157,27 @@
                        "Basic username:password"}
                       "username:password"
                       "/")))))
-           
+
+(deftest test-range?
+  (testing "Request without range header"
+    (is (not (range? {"Content-Length" "7"}))))
+  (testing "Request with range header"
+    (is (range? {"Range" "bytes=0-4"}))))
+
+(deftest test-parse-range
+  (let [path "test/httpserver/public/partial_content.txt"]
+    (testing "Range with both start and end indices"
+      (is (= (response/content path 0 4)
+             (parse-range {"Range" "bytes=0-4"}
+                          path))))
+    (testing "Range with just end index"
+      (is (= (response/content path nil 6)
+             (parse-range {"Range" "bytes=-6"}
+                          path))))
+    (testing "Range with just start index"
+      (is (= (response/content path 4 nil)
+             (parse-range {"Range" "bytes=4-"}
+                          path))))))
 
 (deftest test-choose-response
   (testing "Invalid URI returns 404 response"
@@ -200,4 +217,10 @@
     (is (= (standard-get "test/httpserver/public/logs")
            (choose-response
              restricted-request-with-credentials
-             "test/httpserver/public")))))
+             "test/httpserver/public"))))
+  (testing "Return 206 and partial content"
+    (is (= (response/compose 206
+                             {}
+                             (response/content "test/httpserver/public/partial_content.txt" 0 4))
+           (choose-response partial-get-request
+                            "test/httpserver/public")))))

@@ -1,6 +1,7 @@
 (ns httpserver.router
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
+            [httpserver.file :as file]
             [httpserver.request :as request]
             [httpserver.response :as response]
             [httpserver.routes :as routes]))
@@ -17,9 +18,6 @@
 
 (defn not-allowed? [method]
   (not (contains? http-methods method)))
-
-(defn not-found? [path]
-  (not (.exists (io/as-file path)))) 
 
 (defn decode-uri [uri]
   (string/replace uri 
@@ -63,19 +61,36 @@
                      {"WWW-Authenticate"
                       "Basic realm=\"Admin\""}))) 
 
+(defn range? [headers]
+  (contains? headers "Range"))
+
+(defn parse-range [headers path]
+  (let [value (last (string/split (headers "Range")
+                                  #"="))
+        indices (string/split value 
+                              #"-")
+        start (if (= "" (first indices)) nil 
+                (Integer. (first indices)))
+        end (if (= 1 (count indices)) nil
+              (Integer. (last indices)))]
+    (response/content path start end)))
+
 (defn choose-response [client-msg dir]
   (let [{method :method
          uri :uri
-         headers :headers} (request/parse client-msg)
+         headers :headers
+         body :body} (request/parse client-msg)
         {decoded-uri :uri
          parsed-query :query} (parse-query uri)
+        path (str dir decoded-uri)
         route (routes/check-routes method 
                                    decoded-uri
                                    parsed-query
-                                   headers)
+                                   headers
+                                   body
+                                   path)
         credentials (routes/restricted method
-                                       decoded-uri)
-        path (str dir decoded-uri)]
+                                       decoded-uri)]
     (cond
       (not-allowed? method) (response/compose 405)
       ((complement nil?) route) (apply response/compose 
@@ -83,7 +98,11 @@
       ((complement nil?) credentials) (authorize headers
                                                  credentials
                                                  path)
-      (not-found? path) (response/compose 404)
+      (file/not-found? path) (response/compose 404)
+      (range? headers) (response/compose 
+                         206
+                         {}
+                         (parse-range headers path))  
       (= method "HEAD") (response/compose 200)
       (= method "GET") (standard-get path))))
 

@@ -1,7 +1,45 @@
 (ns httpserver.routes-test
   (:require [clojure.test :refer :all]
-            [httpserver.authentication :as auth]
+            [httpserver.encoding :as code]
+            [httpserver.file :as file]
+            [httpserver.response :as response]
             [httpserver.routes :refer :all]))
+
+(deftest test-handle-form
+  (testing "Return 200 and update /form content when POST"
+    (is (= [200 {} "data=fatcat"]
+           (handle-form "POST" 
+                        "test/httpserver/public/form" 
+                        "data=fatcat")))
+    (is (= "data=fatcat"
+           (slurp "test/httpserver/public/form"))))
+ (testing "Return 200 and update /form content when PUT"
+    (is (= [200 {} "data=heathcliff"]
+           (handle-form "PUT" 
+                        "test/httpserver/public/form" 
+                        "data=heathcliff")))
+    (is (= "data=heathcliff"
+           (slurp "test/httpserver/public/form"))))
+  (testing "Return 200 and delete /form content when DELETE"
+    (is (= [200]
+           (handle-form "DELETE" 
+                        "test/httpserver/public/form" 
+                        "")))
+    (is (file/not-found? "test/httpserver/public/form"))) 
+  (testing "Return 200 when GET on /form without data"
+    (is (= [200]
+           (handle-form "GET" 
+                        "test/httpserver/public/form"
+                        ""))))
+  (testing "Return 200 and data when GET on /form with data"
+    (handle-form "PUT" 
+                 "test/httpserver/public/form"
+                 "data=fatcat")
+    (is (= [200 {} (response/content 
+                     "test/httpserver/public/form")]
+           (handle-form "GET" 
+                        "test/httpserver/public/form"
+                        "")))))
 
 (deftest test-parameters?
   (testing "Return true if GET for /parameters"
@@ -14,7 +52,7 @@
 (deftest test-restricted
   (testing "Return credentials if GET for /logs"
     (is (= "admin:hunter2"
-           (auth/decode-base64 (restricted "GET" 
+           (code/decode-base64 (restricted "GET" 
                                            "/logs")))))
   (testing "Return nil if not a GET request"
     (is (nil? (restricted "PUT" "/logs"))))
@@ -42,16 +80,28 @@
 (deftest test-check-routes
   (testing "Hard-coded route"
     (is (= [200]
-           (check-routes "GET" "/tea" "" {}))))
+           (check-routes "GET" "/tea" "" {} "" "."))))
   (testing "Dynamic route for parameters"
     (is (= [200 {} "my = data\r\nyour = data"]
            (check-routes "GET" 
                          "/parameters" 
                          {"my" "data"
                           "your" "data"}
-                         {}))))
- (testing "Not in defined route"
+                         {}
+                         ""
+                         "."))))
+  (testing "Use handle-form function when URI is /form"
+    (is (= [200 {} "data=fatcat"]
+           (check-routes "PUT"
+                         "/form"
+                         ""
+                         {}
+                         "data=fatcat"
+                         "test/httpserver/public/form"))))
+  (testing "Not in defined route"
     (is (nil? (check-routes "GET" 
                             "/not_a_route"
                             ""
-                            {})))))
+                            {}
+                            ""
+                            ".")))))

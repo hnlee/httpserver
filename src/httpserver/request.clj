@@ -23,4 +23,5 @@
   (let [[all request-line headers body]
         (re-find #"(?s)(.+?)\r\n(.*)\r\n\r\n(.*)" msg)]
     (merge (parse-request-line request-line)
-           {:headers (parse-headers headers)})))
+           {:headers (parse-headers headers)
+            :body body})))
