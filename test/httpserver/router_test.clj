@@ -58,7 +58,7 @@
           "GET"
           "/logs"
           (str "Authorization: Basic "
-               (auth/encode-base64 "admin:hunter2"))
+               (code/encode-base64 "admin:hunter2"))
           ""))
 
 (def partial-get-request (format request-string
@@ -102,20 +102,6 @@
             :query (parse-parameters "my=data&your=data")}
            (parse-query "/form?my=data&your=data")))))
  
-(deftest test-decode-uri
-  (testing "Decode non-encoded URL"
-    (is (= "/form"
-           (decode-uri "/form"))))
-  (testing "Decode encoded character"
-    (is (= " "
-           (decode-uri "%20"))))
-  (testing "Decode encoded character with hexadecimal digit"
-    (is (= "<"
-           (decode-uri "%3C"))))
-  (testing "Decode multiple encoded characters" 
-    (is (= " <, >"
-           (decode-uri "%20%3C%2C%20%3E")))))
-
 (deftest test-standard-get
   (testing "Return 200 with requested URI content in msg body"
     (is (= (response/compose 200

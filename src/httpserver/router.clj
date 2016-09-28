@@ -1,6 +1,7 @@
 (ns httpserver.router
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
+            [httpserver.encoding :as code]
             [httpserver.file :as file]
             [httpserver.request :as request]
             [httpserver.response :as response]
@@ -19,12 +20,6 @@
 (defn not-allowed? [method]
   (not (contains? http-methods method)))
 
-(defn decode-uri [uri]
-  (string/replace uri 
-                  #"(?i)%[0-9a-f]{2}"
-                  #(str (char (Integer/parseInt (subs % 1) 
-                                                16)))))
-
 (defn parse-parameters [parameters]
   (if (string/includes? 
         parameters 
@@ -32,16 +27,16 @@
                   (string/split vars #"&")
                   (map #(string/split % #"=") vars)
                   (reduce concat vars)
-                  (map decode-uri vars)
+                  (map code/decode-uri vars)
                   (apply hash-map vars))
-    (decode-uri parameters)))
+    (code/decode-uri parameters)))
  
 (defn parse-query [uri]
   (if-let [[uri base-uri query] 
            (re-find #"(.*)\?(.*)$" uri)]
-    {:uri (decode-uri base-uri) 
+    {:uri (code/decode-uri base-uri) 
      :query (parse-parameters query)} 
-    {:uri (decode-uri uri)
+    {:uri (code/decode-uri uri)
      :query ""}))
 
 (defn standard-get [path]

@@ -2,7 +2,7 @@
   (:import (java.util Base64))
   (:require [clojure.string :as string]))
 
-(defn decode-url [uri]
+(defn decode-uri [uri]
   (string/replace uri 
                   #"(?i)%[0-9a-f]{2}"
                   #(str (char (Integer/parseInt (subs % 1) 
