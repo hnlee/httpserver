@@ -12,6 +12,7 @@
                     401 "Unauthorized"
                     404 "Not found"
                     405 "Method not allowed"
+                    409 "Conflict"
                     418 "I'm a teapot"
                     302 "Found"})
 

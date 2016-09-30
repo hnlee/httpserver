@@ -67,14 +67,13 @@
                                  "Range: bytes=0-4" 
                                  ""))
 
-(def response-200 (format response-string
-                                 200 "OK"))
-
-(def response-404 (format response-string
-                          404 "Not found"))
-
-(def response-418 (format response-string
-                          418 "I'm a teapot"))
+(def valid-patch-request 
+  (format request-string
+          "PATCH"
+          "/patch-content.txt"
+          (str "If-Match: "
+               (code/encode-sha1 "default content")) 
+          "patched content"))
 
 (deftest test-parse-parameters
   (testing "Query with no parameters"
@@ -165,6 +164,50 @@
              (parse-range {"Range" "bytes=4-"}
                           path))))))
 
+(deftest test-etag?
+  (let [path "test/httpserver/public/patch-content.txt"]
+    (testing "No If-Match header"
+      (is (not (etag? {"Content-Length" "7"}
+                      path))))
+    (testing "Header but wrong etag"
+      (is (not (etag? {"If-Match" "not-a-tag"}
+                      path))))
+    (testing "Header with right etag"
+      (is (etag? {"If-Match"
+                  "dc50a0d27dda2eee9f65644cd7e4c9cf11de8bec"}
+                 path)))))
+
+(deftest test-standard-patch
+  (let [path "test/httpserver/public/patch-content.txt"]
+    (testing "Return 204 response with etag"
+      (is (= (response/compose 
+               204
+               {"ETag" (code/encode-sha1 "patched content")})
+             (standard-patch {"If-Match"
+                              (code/encode-sha1 "default content")}
+                             "patched content"
+                             path)))
+      (standard-patch {"If-Match"
+                       (code/encode-sha1 "patched content")}
+                      "default content" 
+                      path))
+    (testing "Update requested path with body"
+      (standard-patch {"If-Match"
+                       (code/encode-sha1 "default content")}
+                      "patched content"
+                       path)
+      (is (= "patched content"
+             (slurp path)))
+      (standard-patch {"If-Match"
+                       (code/encode-sha1 "patched content")}
+                      "default content" 
+                      path))
+    (testing "Invalid etag in patch request")
+      (is (= (response/compose 409) 
+             (standard-patch {"If-Match" "nonsense"}
+                             "patched content"
+                             path)))))
+
 (deftest test-choose-response
   (testing "Invalid URI returns 404 response"
     (is (= (response/compose 404) 
@@ -209,4 +252,14 @@
                              {}
                              (response/content "test/httpserver/public/partial_content.txt" 0 4))
            (choose-response partial-get-request
-                            "test/httpserver/public")))))
+                            "test/httpserver/public"))))
+  (testing "Return 204 to valid PATCH request"
+    (is (= (response/compose 204
+                             {"ETag"
+                              (code/encode-sha1 "patched content")})
+           (choose-response valid-patch-request
+                            "test/httpserver/public")))
+    (standard-patch {"If-Match"
+                     (code/encode-sha1 "patched content")} 
+                    "default content"
+                    "test/httpserver/public/patch-content.txt")))

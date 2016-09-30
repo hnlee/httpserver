@@ -15,7 +15,8 @@
     "PUT"  
     "DELETE"  
     "TRACE" 
-    "CONNECT"})
+    "CONNECT"
+    "PATCH"})
 
 (defn not-allowed? [method]
   (not (contains? http-methods method)))
@@ -70,6 +71,19 @@
               (Integer. (last indices)))]
     (response/content path start end)))
 
+(defn etag? [headers path]
+  (and (contains? headers "If-Match")
+       (= (headers "If-Match")
+          (code/encode-sha1 (response/content path)))))
+
+(defn standard-patch [headers body path]
+  (if (etag? headers path) (do (spit path body)
+                               (response/compose 
+                                 204
+                                 {"ETag" 
+                                  (code/encode-sha1 body)}))
+    (response/compose 409)))
+
 (defn choose-response [client-msg dir]
   (let [{method :method
          uri :uri
@@ -98,6 +112,9 @@
                          206
                          {}
                          (parse-range headers path))  
+      (= method "PATCH") (standard-patch headers 
+                                         body 
+                                         path)
       (= method "HEAD") (response/compose 200)
       (= method "GET") (standard-get path))))
 

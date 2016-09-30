@@ -17,7 +17,8 @@
    "OPTIONS" {"/method_options2" 
               [200 {"Allow" "GET,OPTIONS"}]
               "/method_options" 
-              [200 {"Allow" "GET,HEAD,POST,OPTIONS,PUT"}]}
+              [200 {"Allow" 
+                    "GET, HEAD, POST, OPTIONS, PUT"}]}
 }) 
 
 (defn handle-form [method path body]
