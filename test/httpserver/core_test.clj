@@ -36,3 +36,12 @@
       (is (= "HTTP/1.1 404 Not found"
              (.readLine client-in))))
 ))
+
+(deftest test-threading
+  (with-open [server (socket/open 5000)
+              client-one (Socket. "localhost" 5000)]
+    (testing "Can accept second connection if one client already connected"
+      (future (threading server "."))
+      (.isConnected client-one)
+      (with-open [client-two (Socket. "localhost" 5000)]
+        (is (.isConnected client-two))))))

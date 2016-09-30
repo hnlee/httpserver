@@ -16,17 +16,23 @@
      :dir (get-in flags ["-d"] default-dir)}))
 
 (defn serve [connection dir]
-  (let [client-msg (socket/receive connection)]
-    (logging/log-request client-msg dir)
-    (socket/give connection
-                 (router/choose-response client-msg
-                                         dir))))
+  (try 
+    (let [client-msg (socket/receive connection)]
+      (logging/log-request client-msg dir)
+      (socket/give connection
+                   (router/choose-response client-msg
+                                           dir)))
+    (finally (socket/close connection))))
+
+(defn threading [server dir]
+  (let [connection (socket/listen server)
+        thread (future (serve connection dir))]
+    (while (not (.isClosed connection))
+      (threading server dir)))) 
 
 (defn -main [& args]
   (let [vars (set-vars args)
         server (socket/open (vars :port))]
-    (while true 
-      (let [connection (socket/listen server)]
-        (try (serve connection (vars :dir))
-             (finally (socket/close connection)))))
+    (while (.isBound server) 
+      (threading server (vars :dir)))
     (socket/close server))) 
