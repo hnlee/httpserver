@@ -1,3 +1,4 @@
+logs
 test/httpserver/public/logs
 /target
 /classes
