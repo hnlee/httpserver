@@ -4,8 +4,7 @@
             [httpserver.encoding :as code]
             [httpserver.file :as file]
             [httpserver.request :as request]
-            [httpserver.response :as response]
-            [httpserver.routes :as routes]))
+            [httpserver.response :as response]))
 
 (def http-methods
   #{"OPTIONS" 
@@ -91,22 +90,9 @@
          body :body} (request/parse client-msg)
         {decoded-uri :uri
          parsed-query :query} (parse-query uri)
-        path (str dir decoded-uri)
-        route (routes/check-routes method 
-                                   decoded-uri
-                                   parsed-query
-                                   headers
-                                   body
-                                   path)
-        credentials (routes/restricted method
-                                       decoded-uri)]
+        path (str dir decoded-uri)]
     (cond
       (not-allowed? method) (response/compose 405)
-      ((complement nil?) route) (apply response/compose 
-                                       route)
-      ((complement nil?) credentials) (authorize headers
-                                                 credentials
-                                                 path)
       (file/not-found? path) (response/compose 404)
       (range? headers) (response/compose 
                          206

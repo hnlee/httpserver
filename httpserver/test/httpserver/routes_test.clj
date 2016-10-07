@@ -3,43 +3,53 @@
             [httpserver.encoding :as code]
             [httpserver.file :as file]
             [httpserver.response :as response]
+            [httpserver.http-messages :refer :all]
             [httpserver.routes :refer :all]))
 
 (deftest test-handle-form
-  (testing "Return 200 and update /form content when POST"
-    (is (= [200 {} "data=fatcat"]
-           (handle-form "POST" 
-                        "test/httpserver/public/form" 
-                        "data=fatcat")))
-    (is (= "data=fatcat"
-           (slurp "test/httpserver/public/form"))))
- (testing "Return 200 and update /form content when PUT"
-    (is (= [200 {} "data=heathcliff"]
-           (handle-form "PUT" 
-                        "test/httpserver/public/form" 
-                        "data=heathcliff")))
-    (is (= "data=heathcliff"
-           (slurp "test/httpserver/public/form"))))
-  (testing "Return 200 and delete /form content when DELETE"
-    (is (= [200]
-           (handle-form "DELETE" 
-                        "test/httpserver/public/form" 
-                        "")))
-    (is (file/not-found? "test/httpserver/public/form"))) 
-  (testing "Return 200 when GET on /form without data"
-    (is (= [200]
-           (handle-form "GET" 
-                        "test/httpserver/public/form"
-                        ""))))
-  (testing "Return 200 and data when GET on /form with data"
-    (handle-form "PUT" 
-                 "test/httpserver/public/form"
-                 "data=fatcat")
-    (is (= [200 {} (response/content 
-                     "test/httpserver/public/form")]
-           (handle-form "GET" 
-                        "test/httpserver/public/form"
-                        "")))))
+  (let [data-fatcat "data=fatcat"
+        data-heathcliff "data=heathcliff"
+        form-path (str test-path "/form")]
+    (testing "Return 200 and update /form content when POST"
+      (is (= (response/compose 200
+                               {}
+                               data-fatcat)
+             (handle-form "POST" 
+                          form-path
+                          data-fatcat)))
+      (is (= data-fatcat 
+             (slurp form-path))))
+   (testing "Return 200 and update /form content when PUT"
+      (is (= (response/compose 200
+                               {}
+                               data-heathcliff)
+             (handle-form "PUT" 
+                          form-path
+                          data-heathcliff)))
+      (is (= data-heathcliff 
+             (slurp form-path))))
+    (testing "Return 200 and delete /form content when DELETE"
+      (is (= (code/str->bytes simple-200-response)
+             (handle-form "DELETE" 
+                          form-path
+                          "")))
+      (is (file/not-found? form-path))) 
+    (testing "Return 200 when GET on /form without data"
+      (is (= (code/str->bytes simple-200-response)
+             (handle-form "GET" 
+                          form-path
+                          ""))))
+    (testing "Return 200 and data when GET on /form with data"
+      (handle-form "PUT" 
+                   form-path
+                   "data=fatcat")
+      (is (= (response/compose
+               200
+               {}
+               (response/content form-path)) 
+             (handle-form "GET" 
+                          form-path
+                          ""))))))
 
 (deftest test-parameters?
   (testing "Return true if GET for /parameters"
@@ -79,29 +89,19 @@
 
 (deftest test-check-routes
   (testing "Hard-coded route"
-    (is (= [200]
-           (check-routes "GET" "/tea" "" {} "" "."))))
+    (is (= (code/str->bytes simple-200-response)
+           (check-routes tea-get-request 
+                           test-path))))
   (testing "Dynamic route for parameters"
-    (is (= [200 {} "my = data\r\nyour = data"]
-           (check-routes "GET" 
-                         "/parameters" 
-                         {"my" "data"
-                          "your" "data"}
-                         {}
-                         ""
-                         "."))))
+    (let [body "my = data\r\nyour = data"]
+      (is (= (response/compose 200 {} body)
+             (check-routes parameters-get-request 
+                           test-path)))))
   (testing "Use handle-form function when URI is /form"
-    (is (= [200 {} "data=fatcat"]
-           (check-routes "PUT"
-                         "/form"
-                         ""
-                         {}
-                         "data=fatcat"
-                         "test/httpserver/public/form"))))
+    (let [body "data=fatcat"]
+      (is (= (response/compose 200 {} body)
+             (check-routes form-put-request 
+                             test-path)))))
   (testing "Not in defined route"
-    (is (nil? (check-routes "GET" 
-                            "/not_a_route"
-                            ""
-                            {}
-                            ""
-                            ".")))))
+    (is (nil? (check-routes not-found-get-request
+                            test-path)))))

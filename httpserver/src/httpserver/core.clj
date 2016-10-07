@@ -1,6 +1,7 @@
 (ns httpserver.core
   (:gen-class)
   (:require [httpserver.router :as router]
+            [httpserver.routes :as routes]
             [httpserver.logging :as logging]
             [httpserver.socket :as socket]))
 
@@ -15,13 +16,19 @@
     {:port (Integer. (get-in flags ["-p"] default-port))
      :dir (get-in flags ["-d"] default-dir)}))
 
+(defn route [client-msg dir]
+  (let [find-route (routes/check-routes client-msg
+                                   dir)]
+    (if (nil? find-route) (router/choose-response client-msg
+                                                  dir)
+     find-route))) 
+
 (defn serve [connection dir]
   (try 
     (let [client-msg (socket/receive connection)]
       (logging/log-request client-msg dir)
       (socket/give connection
-                   (router/choose-response client-msg
-                                           dir)))
+                   (route client-msg dir)))
     (finally (socket/close connection))))
 
 (defn threading [server dir]

@@ -1,79 +1,11 @@
 (ns httpserver.router-test
   (:require [clojure.test :refer :all]
+            [httpserver.http-messages :refer :all]
             [httpserver.router :refer :all]
             [httpserver.encoding :as code]
             [httpserver.routes :as routes]
             [httpserver.request :as request]
             [httpserver.response :as response]))
-
-(def request-string (str "%s %s HTTP/1.1\r\n"
-                         "%s\r\n"
-                         "\r\n"
-                         "%s"))
-
-(def response-string (str "HTTP/1.1 %d %s\r\n"))
-
-(def dir-get-request (format request-string
-                             "GET" "/" "" ""))
-
-(def invalid-head-request (format request-string
-                                  "HEAD" "/foobar" "" ""))
-
-(def valid-head-request (format request-string
-                                "HEAD" "/" "" ""))
-
-(def coffee-get-request (format request-string
-                                "GET"
-                                "/coffee"
-                                "" ""))
-
-(def text-get-request (format request-string
-                              "GET"
-                              "/file1"
-                              "" ""))
-
-(def encoded-tea-request (format request-string
-                                 "GET"
-                                 "/%74%65%61"
-                                 "" ""))
-
-(def query-request (format request-string
-                           "GET"
-                           "/parameters?my=data&your=data"
-                           "" ""))
-
-(def bogus-request (format request-string
-                           "BOGUS"
-                           "/"
-                           "" ""))
-
-(def restricted-request-without-credentials
-  (format request-string
-          "GET"
-          "/logs"
-          "" ""))
-
-(def restricted-request-with-credentials
-  (format request-string
-          "GET"
-          "/logs"
-          (str "Authorization: Basic "
-               (code/encode-base64 "admin:hunter2"))
-          ""))
-
-(def partial-get-request (format request-string
-                                 "GET"
-                                 "/partial_content.txt"
-                                 "Range: bytes=0-4" 
-                                 ""))
-
-(def valid-patch-request 
-  (format request-string
-          "PATCH"
-          "/patch-content.txt"
-          (str "If-Match: "
-               (code/encode-sha1 "default content")) 
-          "patched content"))
 
 (deftest test-parse-parameters
   (testing "Query with no parameters"
@@ -103,10 +35,11 @@
  
 (deftest test-standard-get
   (testing "Return 200 with requested URI content in msg body"
-    (is (= (response/compose 200
-                             {}
-                             (response/content "./"))
-           (standard-get "./")))))
+    (let [dir-path (str test-path "/")]
+      (is (= (response/compose 200
+                               {}
+                               (response/content dir-path))
+             (standard-get dir-path))))))
 
 (deftest test-credentials?
   (testing "No credentials in header"
@@ -121,27 +54,27 @@
                       "username:password"))))
 
 (deftest test-authorize
-  (testing "Return 401 if no credentials in header"
-    (is (= (response/compose 401 
-                             {"WWW-Authenticate"
-                              "Basic realm=\"Admin\""})
-           (authorize {} 
-                      "username:password"
-                      "/"))))
-  (testing "Return 401 if incorrect credentials"
-    (is (= (response/compose 401
-                             {"WWW-Authenticate"
-                              "Basic realm=\"Admin\""})
-           (authorize {"Authorization"
-                       "Basic random-string"}
-                      "username:password"
-                      "/")))) 
-  (testing "Return 200 if correct credentials"
-    (is (= (standard-get "/") 
-           (authorize {"Authorization"
-                       "Basic username:password"}
-                      "username:password"
-                      "/")))))
+  (let [auth-header {"WWW-Authenticate"
+                     "Basic realm=\"Admin\""}]
+    (testing "Return 401 if no credentials in header"
+      (is (= (response/compose 401
+                               auth-header) 
+             (authorize {} 
+                        "username:password"
+                        "/"))))
+    (testing "Return 401 if incorrect credentials"
+      (is (= (response/compose 401
+                               auth-header)
+             (authorize {"Authorization"
+                         "Basic random-string"}
+                        "username:password"
+                        test-path)))) 
+    (testing "Return 200 if correct credentials"
+      (is (= (standard-get test-path) 
+             (authorize {"Authorization"
+                         "Basic username:password"}
+                        "username:password"
+                        test-path))))))
 
 (deftest test-range?
   (testing "Request without range header"
@@ -150,116 +83,103 @@
     (is (range? {"Range" "bytes=0-4"}))))
 
 (deftest test-parse-range
-  (let [path "test/httpserver/public/partial_content.txt"]
+  (let [partial-path (str test-path "/partial_content.txt")]
     (testing "Range with both start and end indices"
-      (is (= (response/content path 0 4)
+      (is (= (response/content partial-path 0 4)
              (parse-range {"Range" "bytes=0-4"}
-                          path))))
+                          partial-path))))
     (testing "Range with just end index"
-      (is (= (response/content path nil 6)
+      (is (= (response/content partial-path nil 6)
              (parse-range {"Range" "bytes=-6"}
-                          path))))
+                          partial-path))))
     (testing "Range with just start index"
-      (is (= (response/content path 4 nil)
+      (is (= (response/content partial-path 4 nil)
              (parse-range {"Range" "bytes=4-"}
-                          path))))))
+                          partial-path))))))
 
 (deftest test-etag?
-  (let [path "test/httpserver/public/patch-content.txt"]
+  (let [patch-path (str test-path "/patch-content.txt")]
     (testing "No If-Match header"
       (is (not (etag? {"Content-Length" "7"}
-                      path))))
+                      patch-path))))
     (testing "Header but wrong etag"
       (is (not (etag? {"If-Match" "not-a-tag"}
-                      path))))
+                      patch-path))))
     (testing "Header with right etag"
       (is (etag? {"If-Match"
-                  "dc50a0d27dda2eee9f65644cd7e4c9cf11de8bec"}
-                 path)))))
+                  (code/encode-sha1 "default content")}
+                 patch-path)))))
 
 (deftest test-standard-patch
-  (let [path "test/httpserver/public/patch-content.txt"]
+  (let [patch-path (str test-path "/patch-content.txt")]
     (testing "Return 204 response with etag"
       (is (= (response/compose 
                204
-               {"ETag" (code/encode-sha1 "patched content")})
-             (standard-patch {"If-Match"
-                              (code/encode-sha1 "default content")}
-                             "patched content"
-                             path)))
+               {"ETag" 
+                (code/encode-sha1 "patched content")})
+             (standard-patch 
+               {"If-Match" 
+                (code/encode-sha1 "default content")}
+               "patched content"
+               patch-path)))
       (standard-patch {"If-Match"
                        (code/encode-sha1 "patched content")}
                       "default content" 
-                      path))
+                      patch-path))
     (testing "Update requested path with body"
       (standard-patch {"If-Match"
                        (code/encode-sha1 "default content")}
                       "patched content"
-                       path)
+                       patch-path)
       (is (= "patched content"
-             (slurp path)))
+             (slurp patch-path)))
       (standard-patch {"If-Match"
                        (code/encode-sha1 "patched content")}
                       "default content" 
-                      path))
+                      patch-path))
     (testing "Invalid etag in patch request")
       (is (= (response/compose 409) 
              (standard-patch {"If-Match" "nonsense"}
                              "patched content"
-                             path)))))
+                             patch-path)))))
 
 (deftest test-choose-response
   (testing "Invalid URI returns 404 response"
     (is (= (response/compose 404) 
-           (choose-response invalid-head-request ".")))) 
-  (testing "Able to get hard-coded route from hashmap"
-    (is (= (response/compose 418
-                             {}
-                             "I'm a teapot")
-           (choose-response coffee-get-request ".")))) 
+           (choose-response not-found-get-request 
+                            test-path)))) 
   (testing "HEAD on valid URI returns 200 response with no body" 
     (is (= (response/compose 200)
-            (choose-response valid-head-request "."))))
+           (choose-response valid-head-request 
+                            test-path))))
   (testing "GET on text file returns content in body"
-    (is (= (standard-get "test/httpserver/public/file1")
+    (is (= (standard-get (str test-path "/file1"))
            (choose-response text-get-request
-                            "test/httpserver/public"))))
+                            test-path))))
   (testing "URI with encoded characters is decoded"
-    (is (= (response/compose 200)
-           (choose-response encoded-tea-request ".")))) 
-  (testing "URI with query string is parsed"
-    (is (= (response/compose 200
-                             {}
-                             "my = data\r\nyour = data")
-           (choose-response query-request ".")))) 
+    (is (= (standard-get (str test-path "/file1"))
+           (choose-response encoded-get-request 
+                            test-path)))) 
   (testing "Return 405 to bogus request"
     (is (= (response/compose 405)
-           (choose-response bogus-request "."))))
-  (testing "Return 401 to /logs without credentials"
-    (is (= (response/compose 401
-                             {"WWW-Authenticate"
-                              "Basic realm=\"Admin\""})
-           (choose-response 
-             restricted-request-without-credentials 
-             "."))))
-  (testing "Return 200 and content to /logs with credentials"
-    (is (= (standard-get "test/httpserver/public/logs")
-           (choose-response
-             restricted-request-with-credentials
-             "test/httpserver/public"))))
+           (choose-response bogus-request 
+                            test-path))))
   (testing "Return 206 and partial content"
-    (is (= (response/compose 206
-                             {}
-                             (response/content "test/httpserver/public/partial_content.txt" 0 4))
+    (is (= (response/compose
+             206 
+             {} 
+             (response/content (str test-path
+                                    "/partial_content.txt")
+                               0 4))
            (choose-response partial-get-request
-                            "test/httpserver/public"))))
+                            test-path))))
   (testing "Return 204 to valid PATCH request"
-    (is (= (response/compose 204
-                             {"ETag"
-                              (code/encode-sha1 "patched content")})
+    (is (= (response/compose 
+             204
+             {"ETag" (code/encode-sha1 "patched content")})
            (choose-response valid-patch-request
-                            "test/httpserver/public")))
+                            test-path)))
     (standard-patch {"If-Match"
                      (code/encode-sha1 "patched content")} 
                     "default content"
-                    "test/httpserver/public/patch-content.txt")))
+                    (str test-path "/patch-content.txt")))) 

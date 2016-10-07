@@ -1,7 +1,9 @@
 (ns httpserver.routes
   (:require [httpserver.encoding :as code] 
+            [httpserver.request :as request]
             [httpserver.response :as response]
             [httpserver.file :as file]
+            [httpserver.router :as router]
             [clojure.string :as string]
             [clojure.java.io :as io]))
 
@@ -28,17 +30,18 @@
                          (spit path 
                                body
                                :append false)  
-                         [200
-                          {}
-                          body])
+                         (response/compose 200
+                                           {}
+                                           body))
     (= "DELETE" method) (do
                           (io/delete-file path)
-                          [200])
+                          (response/compose 200))
     (and (file/not-found? path)
-         (= "GET" method)) [200]
-    (= "GET" method) [200
-                      {}
-                      (response/content path)]))
+         (= "GET" method)) (response/compose 200)
+    (= "GET" method) (response/compose 
+                       200
+                       {}
+                       (response/content path))))
 
 (defn parameters? [method uri]
   (and (= method "GET")
@@ -58,13 +61,30 @@
   (and (contains? static-routes method)
        (contains? (static-routes method) uri)))
 
-(defn check-routes [method uri query headers body path]
+(defn check-routes [client-msg dir]
+  (let [{method :method
+         uri :uri
+         headers :headers
+         body :body} (request/parse client-msg)
+        {decoded-uri :uri
+         query :query} (router/parse-query uri)
+        path (str dir decoded-uri)
+        credentials (restricted method
+                                decoded-uri)]
   (cond 
-    (route? method uri) ((static-routes method) uri)
-    (parameters? method uri) [200
-                              {}
-                              (format-query query)]
-    (= "/form" uri) (handle-form method
-                                 path
-                                 body)
-    :else nil))
+    (route? method 
+            decoded-uri) (apply response/compose 
+                                ((static-routes method) decoded-uri))
+    (parameters? method 
+                 decoded-uri) (response/compose 
+                                200
+                                {} 
+                                (format-query query))
+    (= "/form" decoded-uri) (handle-form method
+                                         path
+                                         body)
+    ((complement nil?) credentials) (router/authorize
+                                       headers
+                                       credentials
+                                       path)
+    :else nil)))
