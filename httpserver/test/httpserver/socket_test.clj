@@ -4,6 +4,7 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [httpserver.http-messages :refer :all]
             [httpserver.socket :refer :all]))
 
 (deftest test-open

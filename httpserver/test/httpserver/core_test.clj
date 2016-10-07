@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [clojure.string :as string]
             [httpserver.socket :as socket]
+            [httpserver.http-messages :refer :all]
             [httpserver.core :refer :all])) 
 
 (deftest test-set-vars 
@@ -28,12 +29,10 @@
               client-in (io/reader client-socket)
               connection (socket/listen server)]
     (testing "Server sends response to request"
-      (.write client-out (str "HEAD /foobar HTTP/1.1\r\n"
-                              "\r\n"
-                              "\r\n"))
+      (.write client-out not-found-get-request)
       (.flush client-out)
       (serve connection ".")
-      (is (= "HTTP/1.1 404 Not found"
+      (is (= (string/trim-newline simple-404-response)
              (.readLine client-in))))
 ))
 

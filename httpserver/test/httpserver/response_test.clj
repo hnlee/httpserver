@@ -2,9 +2,8 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [httpserver.encoding :as code]
+            [httpserver.http-messages :refer :all]
             [httpserver.response :refer :all]))
-
-(def response-string (str "HTTP/1.1 %d %s\r\n"))
 
 (deftest test-ls
   (testing "Get contents of a directory"
@@ -24,40 +23,39 @@
                 "</head><body>Hello world!</body></html>")
            (htmlify "Hello World" "Hello world!")))))
 
+(def text-path (str test-path "/file1"))
+
+(def image-path (str test-path "/image.jpeg"))
+
 (deftest test-content
   (testing "Return text file content"
-    (let [path "test/httpserver/public/file1"]
-      (is (= (code/str->bytes "file1 contents") 
-             (content path)))))
+    (is (= (code/str->bytes "file1 contents") 
+           (content text-path))))
   (testing "Return image file content"
-    (let [path "test/httpserver/public/image.jpeg"
-          file (io/as-file path)]
+    (let [file (io/as-file image-path)]
       (with-open [stream (io/input-stream file)]
         (is (= (vec (repeatedly (.length file)
                                 #(.read stream))) 
-               (content path))))))
-  (testing "Return partial file content with both indices"
-    (let [path "test/httpserver/public/partial_content.txt"]
-      (is (= (subvec (content path) 0 5)
-             (content path 0 4)))))
-  (testing "Return partial file content with only start index"
-    (let [path "test/httpserver/public/partial_content.txt"]
-      (is (= (subvec (content path) 4)
-             (content path 4 nil)))))
-  (testing "Return partial file content with only end index"
-    (let [path "test/httpserver/public/partial_content.txt"]
-      (is (= (vec (take-last 6 (content path)))
-             (content path nil 6))))))
+               (content image-path))))))
+  (let [partial-path (str test-path 
+                          "/partial_content.txt")]
+    (testing "Return partial file content with both indices"
+      (is (= (subvec (content partial-path) 0 5)
+             (content partial-path 0 4))))
+    (testing "Return partial file content with only start index"
+      (is (= (subvec (content partial-path) 4)
+             (content partial-path 4 nil))))
+    (testing "Return partial file content with only end index"
+      (is (= (vec (take-last 6 (content partial-path)))
+             (content partial-path nil 6))))))
 
 (deftest test-content-type
   (testing "Plain text content"
-    (let [path "test/httpserver/public/file1"]
-      (is (= "text/plain"
-             (content-type path)))))
+    (is (= "text/plain"
+           (content-type text-path))))
   (testing "Image content"
-    (let [path "test/httpserver/public/image.jpeg"]
-      (is (= "image/jpeg"
-             (content-type path))))))
+    (is (= "image/jpeg"
+           (content-type image-path)))))
 
 (deftest test-format-status-line
   (testing "Format 200 status line"
@@ -88,11 +86,12 @@
                     {"Allow" "GET,HEAD,POST,OPTIONS,PUT"}))))
   (testing "Return 418 status code with Content-Length header and message body"
     (is (= (code/str->bytes 
-             (str (format response-string 418 "I'm a teapot")
+             (str (format response-string 
+                          418 
+                          "I'm a teapot")
                   "Content-Length: 12\r\n"
                   "\r\n"
                   "I'm a teapot"))
            (compose 418
                     {}
-                    "I'm a teapot"))))
-  )
+                    "I'm a teapot")))))
