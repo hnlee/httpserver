@@ -59,7 +59,7 @@
     (testing "Server sends response to request"
       (.write client-out not-found-get-request)
       (.flush client-out)
-      (serve connection "." nil)
+      (serve connection test-path nil)
       (is (= (string/trim-newline simple-404-response)
              (.readLine client-in))))
 ))
@@ -68,7 +68,7 @@
   (with-open [server (socket/open 5000)
               client-one (Socket. "localhost" 5000)]
     (testing "Can accept second connection if one client already connected"
-      (future (threading server "." nil))
+      (future (threading server test-path nil))
       (.isConnected client-one)
       (with-open [client-two (Socket. "localhost" 5000)]
         (is (.isConnected client-two))))))
