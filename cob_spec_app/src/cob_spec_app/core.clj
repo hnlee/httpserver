@@ -1,7 +1,12 @@
 (ns cob-spec-app.core
-  (:gen-class))
+  (:require [cob-spec-app.routes :as routes]
+            [httpserver.core :as httpserver]))
 
+(defn run-server [port dir]
+  (httpserver/run {:port port
+                   :dir dir
+                   :router routes/choose-response}))
+    
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  )
