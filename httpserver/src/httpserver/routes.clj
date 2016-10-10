@@ -64,25 +64,20 @@
 (defn choose-response [client-msg dir]
   (let [{method :method
          uri :uri
+         query :query
          headers :headers
          body :body} (request/parse client-msg)
-        {decoded-uri :uri
-         query :query} (router/parse-query uri)
-        path (str dir decoded-uri)
-        credentials (restricted method
-                                decoded-uri)]
+        path (str dir uri)
+        credentials (restricted method uri)]
   (cond 
     (route? method 
-            decoded-uri) (apply response/compose 
-                                ((static-routes method) decoded-uri))
+            uri) (apply response/compose 
+                        ((static-routes method) uri))
     (parameters? method 
-                 decoded-uri) (response/compose 
-                                200
-                                {} 
-                                (format-query query))
-    (= "/form" decoded-uri) (handle-form method
-                                         path
-                                         body)
+                 uri) (response/compose 200 
+                                        {} 
+                                        (format-query query))
+    (= "/form" uri) (handle-form method path body)
     ((complement nil?) credentials) (router/authorize
                                        headers
                                        credentials

@@ -2,10 +2,37 @@
   (:require [clojure.test :refer :all]
             [httpserver.request :refer :all]))
 
+(deftest test-parse-parameters
+  (testing "Query with no parameters"
+    (is (= "data"
+           (parse-parameters "data"))))
+  (testing "Query with single parameter"
+    (is (= {"my" "data"}
+           (parse-parameters "my=data"))))
+  (testing "Query with multiple parameters"
+    (is (= {"my" "data"
+            "your" "data"}
+           (parse-parameters "my=data&your=data")))))
+
+(deftest test-parse-query
+  (testing "URI without query"
+    (is (= {:uri "/form"
+            :query ""}
+           (parse-query "/form"))))
+  (testing "URI with query"
+    (is (= {:uri "/form" 
+            :query (parse-parameters "my=data")} 
+           (parse-query "/form?my=data"))))
+  (testing "URI with multiple variables in query"
+    (is (= {:uri "/form"
+            :query (parse-parameters "my=data&your=data")}
+           (parse-query "/form?my=data&your=data")))))
+ 
 (deftest test-parse-request-line
   (testing "Parse method and URI from request line"
     (is (= {:method "GET"
-            :uri "/"}
+            :uri "/"
+            :query ""}
            (parse-request-line "GET / HTTP/1.1\r\n")))))
 
 (deftest test-parse-headers

@@ -7,32 +7,6 @@
             [httpserver.request :as request]
             [httpserver.response :as response]))
 
-(deftest test-parse-parameters
-  (testing "Query with no parameters"
-    (is (= "data"
-           (parse-parameters "data"))))
-  (testing "Query with single parameter"
-    (is (= {"my" "data"}
-           (parse-parameters "my=data"))))
-  (testing "Query with multiple parameters"
-    (is (= {"my" "data"
-            "your" "data"}
-           (parse-parameters "my=data&your=data")))))
-
-(deftest test-parse-query
-  (testing "URI without query"
-    (is (= {:uri "/form"
-            :query ""}
-           (parse-query "/form"))))
-  (testing "URI with query"
-    (is (= {:uri "/form" 
-            :query (parse-parameters "my=data")} 
-           (parse-query "/form?my=data"))))
-  (testing "URI with multiple variables in query"
-    (is (= {:uri "/form"
-            :query (parse-parameters "my=data&your=data")}
-           (parse-query "/form?my=data&your=data")))))
- 
 (deftest test-standard-get
   (testing "Return 200 with requested URI content in msg body"
     (let [dir-path (str test-path "/")]

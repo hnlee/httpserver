@@ -20,25 +20,6 @@
 (defn not-allowed? [method]
   (not (contains? http-methods method)))
 
-(defn parse-parameters [parameters]
-  (if (string/includes? 
-        parameters 
-        "=") (as-> parameters vars 
-                  (string/split vars #"&")
-                  (map #(string/split % #"=") vars)
-                  (reduce concat vars)
-                  (map code/decode-uri vars)
-                  (apply hash-map vars))
-    (code/decode-uri parameters)))
- 
-(defn parse-query [uri]
-  (if-let [[uri base-uri query] 
-           (re-find #"(.*)\?(.*)$" uri)]
-    {:uri (code/decode-uri base-uri) 
-     :query (parse-parameters query)} 
-    {:uri (code/decode-uri uri)
-     :query ""}))
-
 (defn standard-get [path]
   (response/compose 200
                     {}
@@ -86,11 +67,10 @@
 (defn choose-response [client-msg dir]
   (let [{method :method
          uri :uri
+         query :query
          headers :headers
          body :body} (request/parse client-msg)
-        {decoded-uri :uri
-         parsed-query :query} (parse-query uri)
-        path (str dir decoded-uri)]
+        path (str dir uri)]
     (cond
       (not-allowed? method) (response/compose 405)
       (file/not-found? path) (response/compose 404)
