@@ -83,10 +83,3 @@
       (with-open [client-two (Socket. "localhost" 5000)]
         (is (.isConnected client-two))))))
 
-(deftest test-run
-  (let [server (future (run {:port 5000 
-                             :dir test-path 
-                             :router nil}))]
-    (with-open [client (Socket. "localhost" 5000)]
-      (is (.isConnected client)))
-    (socket/close (deref server))))

@@ -39,19 +39,15 @@
 
 (defn threading [server dir router-fn]
   (let [connection (socket/listen server)
-        thread (serve connection dir router-fn)]
+        thread (future (serve connection dir router-fn))]
     (while (not (.isClosed connection))
-      (future (threading server dir router-fn)))))
-
-(defn run [vars]
-  (let [{port :port
-         dir :dir
-         router-fn :router} vars
-        server (socket/open port)]
-    (future (threading server dir router-fn))
-    server))
+      (threading server dir router-fn))))
 
 (defn -main [& args]
-  (let [vars (set-vars args)
-        server (run vars)]
+  (let [{port :port
+         dir :dir
+         router-fn :router} (set-vars args)
+        server (socket/open port)]
+    (while (.isBound server)
+      (threading server dir router-fn))
     (socket/close server)))
