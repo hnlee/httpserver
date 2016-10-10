@@ -14,7 +14,8 @@
 (defn set-vars [args]
   (let [flags (apply hash-map args)]
     {:port (Integer. (get-in flags ["-p"] default-port))
-     :dir (get-in flags ["-d"] default-dir)}))
+     :dir (get-in flags ["-d"] default-dir)
+     :router (get-in flags ["-r"] nil)}))
 
 (defn route 
   ; Optional parameter to supply custom routes 
@@ -26,17 +27,19 @@
         (router/choose-response client-msg 
                                 dir)))))
 
-(defn serve [connection dir]
+(defn serve [connection dir router-fn]
   (try 
-    (let [client-msg (socket/receive connection)]
+    (let [client-msg (socket/receive connection)
+          server-msg (if (nil? router-fn) (route client-msg
+                                                 dir)
+                       (route client-msg dir router-fn))]
       (logging/log-request client-msg dir)
-      (socket/give connection
-                   (route client-msg dir)))
+      (socket/give connection server-msg))
     (finally (socket/close connection))))
 
-(defn threading [server dir]
+(defn threading [server dir router-fn]
   (let [connection (socket/listen server)
-        thread (future (serve connection dir))]
+        thread (future (serve connection dir router-fn))]
     (while (not (.isClosed connection))
       (threading server dir)))) 
 
@@ -44,5 +47,5 @@
   (let [vars (set-vars args)
         server (socket/open (vars :port))]
     (while (.isBound server) 
-      (threading server (vars :dir)))
+      (threading server (vars :dir) (vars :router)))
     (socket/close server))) 

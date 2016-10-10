@@ -8,25 +8,33 @@
             [httpserver.http-messages :refer :all]
             [httpserver.core :refer :all])) 
 
-(deftest test-set-vars 
-  (testing "Use default settings if no flags"
-    (is (= (hash-map :port 5000 :dir default-dir)
-           (set-vars '()))))
-  (testing "Set port when only dir is given"
-    (is (= (hash-map :port 8888 :dir default-dir)
-           (set-vars (list "-p" "8888")))))
-  (testing "Set dir when only port is given"
-    (is (= (hash-map :port 5000 :dir test-path)
-           (set-vars (list "-d" test-path)))))
-  (testing "Use given settings if both flags"
-    (is (= (hash-map :port 8888 :dir test-path)
-           (set-vars (list "-p" "8888" "-d" test-path)))))
-)
-
 (defn mock-router-fn [client-msg dir]
   (if (= client-msg 
          dir-get-request) (response/compose 409)
-    nil)) 
+    nil))
+
+(deftest test-set-vars 
+  (testing "Use default settings if no flags"
+    (is (= {:port default-port :dir default-dir :router nil}
+           (set-vars '()))))
+  (testing "Set dir and router when only port is given"
+    (is (= {:port 8888 :dir default-dir :router nil}
+           (set-vars (list "-p" "8888")))))
+  (testing "Set port and router when only dir is given"
+    (is (= {:port default-port :dir test-path :router nil}
+           (set-vars (list "-d" test-path)))))
+  (testing "Set port and dir when only router is given"
+    (is (= {:port default-port
+            :dir default-dir
+            :router mock-router-fn}
+           (set-vars (list "-r" mock-router-fn)))))
+  (testing "Use given settings if all flags provided"
+    (is (= {:port 8888 
+            :dir test-path 
+            :router mock-router-fn}
+           (set-vars (list "-p" "8888" 
+                           "-d" test-path
+                           "-r" mock-router-fn))))))
 
 (deftest test-route
   (testing "Default router behavior"
@@ -51,7 +59,7 @@
     (testing "Server sends response to request"
       (.write client-out not-found-get-request)
       (.flush client-out)
-      (serve connection ".")
+      (serve connection "." nil)
       (is (= (string/trim-newline simple-404-response)
              (.readLine client-in))))
 ))
@@ -60,7 +68,7 @@
   (with-open [server (socket/open 5000)
               client-one (Socket. "localhost" 5000)]
     (testing "Can accept second connection if one client already connected"
-      (future (threading server "."))
+      (future (threading server "." nil))
       (.isConnected client-one)
       (with-open [client-two (Socket. "localhost" 5000)]
         (is (.isConnected client-two))))))
