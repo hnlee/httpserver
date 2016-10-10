@@ -6,10 +6,11 @@
             [cob-spec-app.core :refer :all]))
 
 (deftest test-run-server
-  (future (run-server 5000 "test/cob_spec_app/public"))
-  (with-open [client (Socket. "localhost" 5000)
+  (with-open [server (socket/open 5000)
+              client (Socket. "localhost" 5000)
               client-out (io/writer client)
               client-in (io/reader client)]
+    (future (run-server server "test/cob_spec_app/public"))
     (testing "Connect to server"
       (is (.isConnected client)))
     (testing "Send to and receive from server"
@@ -23,5 +24,4 @@
               "GET /tea HTTP/1.1\r\n\r\n\r\n")
       (.flush client-out)
       (is (= "HTTP/1.1 200 OK")))))
-              
-
+ 

@@ -1,12 +1,18 @@
 (ns cob-spec-app.core
   (:require [cob-spec-app.routes :as routes]
-            [httpserver.core :as httpserver]))
+            [httpserver.socket :as socket]
+            [httpserver.core :as httpserver])
+  (:gen-class))
 
-(defn run-server [port dir]
-  (httpserver/run {:port port
-                   :dir dir
-                   :router routes/choose-response}))
+(defn run-server [server dir]
+  (httpserver/threading server
+                        dir
+                        routes/choose-response))
     
-(defn -main
-  [& args]
-  )
+(defn -main [& args]
+  (let [{port :port
+         dir :dir} (httpserver/set-vars args)
+        server (socket/open port)]
+    (while (.isBound server)
+      (run-server server dir))
+    (socket/close server)))
