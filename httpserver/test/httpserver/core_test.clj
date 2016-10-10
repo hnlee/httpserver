@@ -23,10 +23,24 @@
            (set-vars (list "-p" "8888" "-d" test-path)))))
 )
 
+(defn mock-router-fn [client-msg dir]
+  (if (= client-msg 
+         dir-get-request) (response/compose 409)
+    nil)) 
+
 (deftest test-route
   (testing "Default router behavior"
     (is (= (response/compose 404)
-           (route not-found-get-request test-path)))))
+           (route not-found-get-request test-path))))
+  (testing "Optional router behavior"
+    (is (= (response/compose 409)
+           (route dir-get-request 
+                  test-path
+                  mock-router-fn)))
+    (is (= (response/compose 404)
+           (route not-found-get-request 
+                  test-path
+                  mock-router-fn)))))
 
 (deftest test-serve
   (with-open [server (socket/open 5000)

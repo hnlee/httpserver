@@ -16,12 +16,15 @@
     {:port (Integer. (get-in flags ["-p"] default-port))
      :dir (get-in flags ["-d"] default-dir)}))
 
-(defn route [client-msg dir]
-  (let [find-route (routes/choose-response client-msg
-                                   dir)]
-    (if (nil? find-route) (router/choose-response client-msg
-                                                  dir)
-     find-route))) 
+(defn route 
+  ; Optional parameter to supply custom routes 
+  ([client-msg dir]
+    (router/choose-response client-msg dir))
+  ([client-msg dir router-fn]
+    (let [custom-route (router-fn client-msg dir)]
+      (if-not (nil? custom-route) custom-route 
+        (router/choose-response client-msg 
+                                dir)))))
 
 (defn serve [connection dir]
   (try 
