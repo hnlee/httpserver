@@ -1,7 +1,7 @@
 (ns httpserver.encoding-test
   (:import [java.util Base64])
   (:require [clojure.test :refer :all]
-            [httpserver.encoding :refer :all]
+            [httpserver.encoding :refer :all] ; Avoid :erfer :all unless you're referring to clojure.test (pardon the pun)
             [httpserver.response :as response]))
 
 (deftest test-str->bytes

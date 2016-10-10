@@ -4,8 +4,8 @@
 
 (defn log-request [client-msg dir]
   (let [log-path (str dir "/logs")
-        log (str (LocalDateTime/now) 
-                 "\r\n" 
+        log (str (LocalDateTime/now)  ; Gets a lot easier to test if you inject time, which is the devil
+                 "\r\n"
                  client-msg
                  "-----\r\n")]
     (spit log-path log :append true)))

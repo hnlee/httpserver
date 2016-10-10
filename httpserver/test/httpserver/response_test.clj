@@ -5,13 +5,19 @@
             [httpserver.http-messages :refer :all]
             [httpserver.response :refer :all]))
 
+; This isn't the worst test, but as a rule you don't want to actually depend on the file structure
+; when writing tests. In addition your "expected" is an implementation - so if you got the expected wrong then
+; the actual will be wrong too. You should usually avoid that.
+; What you could do is pass is/as-file as a function in to ls. Then as-file could return a test protocol that
+; has a function named .list, and returns a known list. This would make sure you properly called it and converted
+; it to a list.
 (deftest test-ls
   (testing "Get contents of a directory"
     (is (= (apply list (.list (io/as-file "./")))
            (ls "./")))))
 
 (deftest test-linkify
-  (testing "Return HTML markup for list of paths" 
+  (testing "Return HTML markup for list of paths"
     (is (= (str "<a href=\"/file1\">file1</a><br />"
                 "<a href=\"/file2\">file2</a><br />")
            (linkify '("file1" "file2"))))))
@@ -29,15 +35,15 @@
 
 (deftest test-content
   (testing "Return text file content"
-    (is (= (code/str->bytes "file1 contents") 
+    (is (= (code/str->bytes "file1 contents")
            (content text-path))))
   (testing "Return image file content"
     (let [file (io/as-file image-path)]
       (with-open [stream (io/input-stream file)]
         (is (= (vec (repeatedly (.length file)
-                                #(.read stream))) 
+                                #(.read stream)))
                (content image-path))))))
-  (let [partial-path (str test-path 
+  (let [partial-path (str test-path
                           "/partial_content.txt")]
     (testing "Return partial file content with both indices"
       (is (= (subvec (content partial-path) 0 5)
@@ -65,29 +71,29 @@
 (deftest test-format-headers
   (testing "Format headers hashmap into string"
     (= "Allow: GET\r\nContent-Length: 10"
-       (format-headers {"Allow" "GET" 
+       (format-headers {"Allow" "GET"
                         "Content-Length" 10}))))
 
 (deftest test-compose
   (testing "Return 200 status code"
-    (is (= (code/str->bytes 
+    (is (= (code/str->bytes
              (format response-string 200 "OK"))
            (compose 200))))
   (testing "Return 404 status code"
-    (is (= (code/str->bytes 
+    (is (= (code/str->bytes
              (format response-string 404 "Not found"))
            (compose 404))))
   (testing "Return 200 status code with Allows header"
-    (is (= (code/str->bytes 
+    (is (= (code/str->bytes
              (str (format response-string 200 "OK")
                   "Allow: GET,HEAD,POST,OPTIONS,PUT"
-                  "\r\n\r\n"))         
+                  "\r\n\r\n"))
            (compose 200
                     {"Allow" "GET,HEAD,POST,OPTIONS,PUT"}))))
   (testing "Return 418 status code with Content-Length header and message body"
-    (is (= (code/str->bytes 
-             (str (format response-string 
-                          418 
+    (is (= (code/str->bytes
+             (str (format response-string
+                          418
                           "I'm a teapot")
                   "Content-Length: 12\r\n"
                   "\r\n"

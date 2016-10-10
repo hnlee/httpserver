@@ -1,5 +1,5 @@
 (ns httpserver.response
-  (:require [httpserver.file :as file] 
+  (:require [httpserver.file :as file]
             [httpserver.encoding :as code]
             [clojure.java.io :as io]
             [clojure.string :as string]))
@@ -22,8 +22,9 @@
           status-code
           (reason-phrase status-code)))
 
+; I think you clould use map/join here too, same as below
 (defn format-headers [headers-map]
-  (apply str 
+  (apply str
          (for [header (keys headers-map)]
            (str header ": " (headers-map header) "\r\n"))))
 
@@ -31,8 +32,8 @@
   (string/join (map #(str "<a href=\"/"
                           %
                           "\">"
-                          % 
-                          "</a><br />") paths))) 
+                          %
+                          "</a><br />") paths)))
 
 (defn htmlify [title body]
   (str "<html><head><title>"
@@ -44,7 +45,7 @@
 (defn ls [path]
   (apply list (.list (io/as-file path))))
 
-(defn content 
+(defn content
   ;Option to supply indices for partial content
   ([path]
     (if (file/directory? path)
@@ -52,39 +53,39 @@
         (htmlify (str "Index of " dir)
                  (linkify (ls path))))
       (let [file (io/as-file path)]
-        (with-open [stream (io/input-stream file)] 
-          (vec (repeatedly (.length file) 
+        (with-open [stream (io/input-stream file)]
+          (vec (repeatedly (.length file)
                            #(.read stream)))))))
   ([path start end]
-   (cond 
+   (cond
      (nil? end) (subvec (content path) start)
-     (nil? start) (vec (take-last end (content path))) 
+     (nil? start) (vec (take-last end (content path)))
      :else (subvec (content path) start (inc end)))))
 
 (defn content-type [path]
-  (cond 
+  (cond
     (file/directory? path) "text/html"
-    ((complement nil?) 
-      (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg" 
+    ((complement nil?)
+      (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg"
     :else "text/plain"))
 
-(defn compose 
+(defn compose
   "Option to provide headers and message body in params"
-  ([status-code] 
-    (code/str->bytes (format-status-line status-code))) 
+  ([status-code]
+    (code/str->bytes (format-status-line status-code)))
   ([status-code headers-map]
     (concat (compose status-code)
-            (code/str->bytes 
+            (code/str->bytes
               (str (format-headers headers-map)
                    "\r\n"))))
   ([status-code headers-map body]
-   (let [msg-body (if (string? body) (code/str->bytes body) 
+   (let [msg-body (if (string? body) (code/str->bytes body)
                     body)]
-     (if (contains? 
-           headers-map 
+     (if (contains?
+           headers-map
            "Content-Length") (concat (compose status-code
                                               headers-map)
-                                     msg-body)
+                                     msg-body) ; FORMATTING! Yuuuuuck
        (compose status-code
                 (merge headers-map
                        {"Content-Length" (count msg-body)})
