@@ -51,24 +51,42 @@
                   mock-router-fn)))))
 
 (deftest test-serve
-  (with-open [server (socket/open 5000)
-              client-socket (Socket. "localhost" 5000)
-              client-out (io/writer client-socket)
-              client-in (io/reader client-socket)
-              connection (socket/listen server)]
-    (testing "Server sends response to request"
+  (testing "Server sends typical HTTP response to request"
+    (with-open [server (socket/open 5000)
+                client-socket (Socket. "localhost" 5000)
+                client-out (io/writer client-socket)
+                client-in (io/reader client-socket)
+                connection (socket/listen server)]
       (.write client-out not-found-get-request)
       (.flush client-out)
       (serve connection test-path nil)
       (is (= (string/trim-newline simple-404-response)
-             (.readLine client-in))))
-))
+             (.readLine client-in)))))
+  (testing "Server sends custom HTTP response to request" 
+   (with-open [server (socket/open 5000)
+                client-socket (Socket. "localhost" 5000)
+                client-out (io/writer client-socket)
+                client-in (io/reader client-socket)
+                connection (socket/listen server)]
+      (.write client-out dir-get-request)
+      (.flush client-out)
+      (serve connection test-path mock-router-fn)
+      (is (= (string/trim-newline simple-409-response)
+             (.readLine client-in))))))
 
 (deftest test-threading
   (with-open [server (socket/open 5000)
               client-one (Socket. "localhost" 5000)]
     (testing "Can accept second connection if one client already connected"
       (future (threading server test-path nil))
-      (.isConnected client-one)
+      (is (.isConnected client-one))
       (with-open [client-two (Socket. "localhost" 5000)]
         (is (.isConnected client-two))))))
+
+(deftest test-run
+  (let [server (future (run {:port 5000 
+                             :dir test-path 
+                             :router nil}))]
+    (with-open [client (Socket. "localhost" 5000)]
+      (is (.isConnected client)))
+    (socket/close (deref server))))

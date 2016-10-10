@@ -18,6 +18,10 @@
                           404
                           "Not found"))
 
+(def simple-409-response (format response-string
+                          409
+                          "Conflict"))
+
 (def tea-get-request (format request-string
                              "GET" "/tea" "" ""))
 
