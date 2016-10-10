@@ -61,7 +61,7 @@
   (and (contains? static-routes method)
        (contains? (static-routes method) uri)))
 
-(defn check-routes [client-msg dir]
+(defn choose-response [client-msg dir]
   (let [{method :method
          uri :uri
          headers :headers

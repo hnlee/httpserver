@@ -17,7 +17,7 @@
      :dir (get-in flags ["-d"] default-dir)}))
 
 (defn route [client-msg dir]
-  (let [find-route (routes/check-routes client-msg
+  (let [find-route (routes/choose-response client-msg
                                    dir)]
     (if (nil? find-route) (router/choose-response client-msg
                                                   dir)

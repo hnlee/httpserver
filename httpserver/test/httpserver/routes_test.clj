@@ -87,21 +87,21 @@
   (testing "Is a route"
     (is (route? "GET" "/tea"))))
 
-(deftest test-check-routes
+(deftest test-choose-response
   (testing "Hard-coded route"
     (is (= (code/str->bytes simple-200-response)
-           (check-routes tea-get-request 
+           (choose-response tea-get-request 
                            test-path))))
   (testing "Dynamic route for parameters"
     (let [body "my = data\r\nyour = data"]
       (is (= (response/compose 200 {} body)
-             (check-routes parameters-get-request 
+             (choose-response parameters-get-request 
                            test-path)))))
   (testing "Use handle-form function when URI is /form"
     (let [body "data=fatcat"]
       (is (= (response/compose 200 {} body)
-             (check-routes form-put-request 
+             (choose-response form-put-request 
                              test-path)))))
   (testing "Not in defined route"
-    (is (nil? (check-routes not-found-get-request
+    (is (nil? (choose-response not-found-get-request
                             test-path)))))
