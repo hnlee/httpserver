@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [clojure.string :as string]
             [httpserver.socket :as socket]
+            [httpserver.response :as response]
             [httpserver.http-messages :refer :all]
             [httpserver.core :refer :all])) 
 
@@ -13,14 +14,19 @@
            (set-vars '()))))
   (testing "Set port when only dir is given"
     (is (= (hash-map :port 8888 :dir default-dir)
-           (set-vars '("-p" "8888")))))
+           (set-vars (list "-p" "8888")))))
   (testing "Set dir when only port is given"
-    (is (= (hash-map :port 5000 :dir "~")
-           (set-vars '("-d" "~")))))
+    (is (= (hash-map :port 5000 :dir test-path)
+           (set-vars (list "-d" test-path)))))
   (testing "Use given settings if both flags"
-    (is (= (hash-map :port 8888 :dir "~")
-           (set-vars '("-p" "8888" "-d" "~")))))
+    (is (= (hash-map :port 8888 :dir test-path)
+           (set-vars (list "-p" "8888" "-d" test-path)))))
 )
+
+(deftest test-route
+  (testing "Default router behavior"
+    (is (= (response/compose 404)
+           (route not-found-get-request test-path)))))
 
 (deftest test-serve
   (with-open [server (socket/open 5000)
