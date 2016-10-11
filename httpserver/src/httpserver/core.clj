@@ -6,14 +6,17 @@
 
 (def default-port 5000)
 
-(def default-dir 
-  (let [public (System/getenv "PUBLIC_DIR")]
+(defn getenv [env-var]
+  (System/getenv env-var))
+
+(defn default-dir []
+  (let [public (getenv "PUBLIC_DIR")]
     (if (nil? public) "." public)))
 
 (defn get-vars [args]
   (let [flags (apply hash-map args)]
     {:port (Integer. (get-in flags ["-p"] default-port))
-     :dir (get-in flags ["-d"] default-dir)
+     :dir (get-in flags ["-d"] (default-dir))
      :router (get-in flags ["-r"] nil)}))
 
 (defn route 
@@ -22,7 +25,8 @@
     (router/choose-response client-msg dir))
   ([client-msg dir router-fn]
     (let [custom-route (router-fn client-msg dir)]
-      (if-not (nil? custom-route) custom-route 
+      (if-not 
+        (nil? custom-route) custom-route 
         (router/choose-response client-msg 
                                 dir)))))
 
