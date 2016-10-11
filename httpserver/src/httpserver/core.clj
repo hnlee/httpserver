@@ -33,8 +33,9 @@
 (defn serve [connection dir router-fn]
   (try 
     (let [client-msg (socket/receive connection)
-          server-msg (if (nil? router-fn) (route client-msg
-                                                 dir)
+          server-msg (if 
+                       (nil? router-fn) (route client-msg
+                                               dir)
                        (route client-msg dir router-fn))]
       (logging/log-request client-msg dir)
       (socket/give connection server-msg))

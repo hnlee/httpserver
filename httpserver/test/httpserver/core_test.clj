@@ -31,7 +31,6 @@
                       http/test-path))]
       (is (= "." (default-dir))))))
 
-
 (deftest test-get-vars 
   (testing "Use default settings if no flags"
     (is (= {:port default-port 
