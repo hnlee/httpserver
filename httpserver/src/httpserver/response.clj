@@ -48,8 +48,10 @@
 (defn content 
   ;Option to supply indices for partial content
   ([path]
-    (if (file/directory? path)
-      (let [[all dir] (re-find #".*(/.*?)$" path)]
+    (if 
+      (file/directory? path) (let [[all dir] 
+                                   (re-find #".*(/.*?)$"
+                                            path)]
         (htmlify (str "Index of " dir)
                  (linkify (ls path))))
       (let [file (io/as-file path)]
@@ -69,6 +71,9 @@
       (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg" 
     :else "text/plain"))
 
+(defn length? [headers-map]
+  (contains? headers-map "Content-Length"))
+
 (defn compose 
   "Option to provide headers and message body in params"
   ([status-code] 
@@ -79,13 +84,13 @@
               (str (format-headers headers-map)
                    "\r\n"))))
   ([status-code headers-map body]
-   (let [msg-body (if (string? body) (code/str->bytes body) 
+   (let [msg-body (if 
+                    (string? body) (code/str->bytes body) 
                     body)]
-     (if (contains? 
-           headers-map 
-           "Content-Length") (concat (compose status-code
+     (if 
+       (length? headers-map) (concat (compose status-code
                                               headers-map)
-                                     msg-body)
+                                     msg-body) 
        (compose status-code
                 (merge headers-map
                        {"Content-Length" (count msg-body)})
