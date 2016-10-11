@@ -11,7 +11,7 @@
     
 (defn -main [& args]
   (let [{port :port
-         dir :dir} (httpserver/set-vars args)
+         dir :dir} (httpserver/get-vars args)
         server (socket/open port)]
     (while (.isBound server)
       (run-server server dir))

@@ -1,7 +1,6 @@
 (ns httpserver.core
   (:gen-class)
   (:require [httpserver.router :as router]
-            [httpserver.routes :as routes]
             [httpserver.logging :as logging]
             [httpserver.socket :as socket]))
 
@@ -11,7 +10,7 @@
   (let [public (System/getenv "PUBLIC_DIR")]
     (if (nil? public) "." public)))
 
-(defn set-vars [args]
+(defn get-vars [args]
   (let [flags (apply hash-map args)]
     {:port (Integer. (get-in flags ["-p"] default-port))
      :dir (get-in flags ["-d"] default-dir)
@@ -46,7 +45,7 @@
 (defn -main [& args]
   (let [{port :port
          dir :dir
-         router-fn :router} (set-vars args)
+         router-fn :router} (get-vars args)
         server (socket/open port)]
     (while (.isBound server)
       (threading server dir router-fn))

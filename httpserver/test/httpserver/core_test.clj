@@ -13,26 +13,26 @@
          dir-get-request) (response/compose 409)
     nil))
 
-(deftest test-set-vars 
+(deftest test-get-vars 
   (testing "Use default settings if no flags"
     (is (= {:port default-port :dir default-dir :router nil}
-           (set-vars '()))))
+           (get-vars '()))))
   (testing "Set dir and router when only port is given"
     (is (= {:port 8888 :dir default-dir :router nil}
-           (set-vars (list "-p" "8888")))))
+           (get-vars (list "-p" "8888")))))
   (testing "Set port and router when only dir is given"
     (is (= {:port default-port :dir test-path :router nil}
-           (set-vars (list "-d" test-path)))))
+           (get-vars (list "-d" test-path)))))
   (testing "Set port and dir when only router is given"
     (is (= {:port default-port
             :dir default-dir
             :router mock-router-fn}
-           (set-vars (list "-r" mock-router-fn)))))
+           (get-vars (list "-r" mock-router-fn)))))
   (testing "Use given settings if all flags provided"
     (is (= {:port 8888 
             :dir test-path 
             :router mock-router-fn}
-           (set-vars (list "-p" "8888" 
+           (get-vars (list "-p" "8888" 
                            "-d" test-path
                            "-r" mock-router-fn))))))
 

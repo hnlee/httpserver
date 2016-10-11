@@ -3,7 +3,6 @@
             [httpserver.http-messages :refer :all]
             [httpserver.router :refer :all]
             [httpserver.encoding :as code]
-            [httpserver.routes :as routes]
             [httpserver.request :as request]
             [httpserver.response :as response]))
 
