@@ -3,6 +3,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as string]))
 
+(def crlf "\r\n")
+
 (defn open [port]
   (ServerSocket. port))
 
@@ -16,15 +18,15 @@
   (string/includes? headers "Content-Length"))
 
 (defn read-request-line [reader]
-  (str (.readLine reader) "\r\n"))
+  (str (.readLine reader) crlf))
 
 (defn read-headers [reader]
   (loop [headers ""
          line (.readLine reader)]
     (cond 
-      (and (= "" line) (= "" headers)) "\r\n"
+      (and (= "" line) (= "" headers)) crlf
       (= "" line) headers 
-      :else (recur (str headers line "\r\n")
+      :else (recur (str headers line crlf)
                    (.readLine reader))))) 
 
 (defn read-body [headers reader]
@@ -39,9 +41,9 @@
         headers (read-headers reader)]
     (if (body? headers) (str request-line 
                              headers
-                             "\r\n"
+                             crlf
                              (read-body headers reader))
-      (str request-line headers "\r\n"))))
+      (str request-line headers crlf))))
 
 (defn give [connection response]
   (let [stream (io/output-stream connection)]

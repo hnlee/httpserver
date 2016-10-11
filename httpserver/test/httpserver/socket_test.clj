@@ -19,8 +19,7 @@
   (let [server-socket (open 5000)]
     (testing "Close socket"
       (close server-socket)
-      (is (.isClosed server-socket))))
-)
+      (is (.isClosed server-socket)))))
 
 (deftest test-listen
   (with-open [server-socket (open 5000)
@@ -28,13 +27,16 @@
     (testing "Client can connect to server"
       (is (.isConnected client-socket)))))
 
-(def single-line-request (str "GET / HTTP/1.1\r\n"
-                              "\r\n"
-                              "\r\n"))
+(def single-line-request (str "GET / HTTP/1.1"
+                              crlf
+                              crlf
+                              crlf))
 
-(def multi-line-request (str "PUT /form HTTP/1.1\r\n"
-                             "Content-Length: 7\r\n"
-                             "\r\n"
+(def multi-line-request (str "PUT /form HTTP/1.1"
+                             crlf
+                             "Content-Length: 7"
+                             crlf
+                             crlf
                              "My=Data"))
 
 (deftest test-body?
@@ -60,13 +62,13 @@
     (with-open [input (StringReader. single-line-request)
                 stream (io/reader input)]
       (read-request-line stream)
-      (is (= "\r\n" 
+      (is (= crlf 
              (read-headers stream)))))
   (testing "Request with headers"
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
       (read-request-line stream)
-      (is (= (str "Content-Length: 7\r\n") 
+      (is (= (str "Content-Length: 7" crlf) 
              (read-headers stream))))))
 
 (deftest test-read-body
@@ -90,8 +92,7 @@
       (.write stream multi-line-request)
       (.flush stream)
       (is (= multi-line-request 
-             (receive connection))))
-))
+             (receive connection))))))
 
 (deftest test-give
   (with-open [server-socket (open 5000)
@@ -103,6 +104,5 @@
             output (map (comp byte int) status-line)]
         (give connection output)
         (is (= (str/trim-newline status-line) 
-               (.readLine stream)))))
-))
+               (.readLine stream)))))))
  
