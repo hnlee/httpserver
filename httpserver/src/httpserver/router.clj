@@ -31,24 +31,28 @@
           (str "Basic " credentials))))
 
 (defn authorize [headers credentials path]
-  (if (credentials? headers
-                    credentials) (standard-get path)
-   (response/compose 401
-                     {"WWW-Authenticate"
-                      "Basic realm=\"Admin\""}))) 
+  (if 
+    (credentials? headers credentials) (standard-get path)
+    (response/compose 401
+                      {"WWW-Authenticate"
+                       "Basic realm=\"Admin\""}))) 
 
 (defn range? [headers]
   (contains? headers "Range"))
 
+(defn parse-indices [indices]
+  (let [[start end] (string/split indices #"-")]
+    [(if 
+       (= "" start) nil
+       (Integer. start))
+     (if
+       (nil? end) end
+       (Integer. end))]))
+
 (defn parse-range [headers path]
   (let [value (last (string/split (headers "Range")
                                   #"="))
-        indices (string/split value 
-                              #"-")
-        start (if (= "" (first indices)) nil 
-                (Integer. (first indices)))
-        end (if (= 1 (count indices)) nil
-              (Integer. (last indices)))]
+        [start end] (parse-indices value)]
     (response/content path start end)))
 
 (defn etag? [headers path]

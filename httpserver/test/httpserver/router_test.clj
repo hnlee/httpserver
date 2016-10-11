@@ -55,6 +55,14 @@
   (testing "Request with range header"
     (is (range? {"Range" "bytes=0-4"}))))
 
+(deftest test-parse-indices
+  (testing "Range has both start and end indices"
+    (is (= [0 4] (parse-indices "0-4"))))
+  (testing "Range has just end index"
+    (is (= [nil 6] (parse-indices "-6"))))
+  (testing "Range has just start index"
+    (is (= [4 nil] (parse-indices "4-")))))
+
 (deftest test-parse-range
   (let [partial-path (str test-path "/partial_content.txt")]
     (testing "Range with both start and end indices"
