@@ -1,18 +1,31 @@
 (ns httpserver.logging-test
   (:require [clojure.test :refer :all]
             [clojure.string :as string]
-            [httpserver.http-messages :refer :all]
+            [clojure.java.io :as io]
+            [httpserver.http-messages :as http]
             [httpserver.logging :refer :all]))
+
+(def log-path (str http/test-path "/logs"))
+
+(defn delete-log-file []
+  (if 
+    (.exists (io/as-file log-path)) (io/delete-file log-path)))
 
 (deftest test-log-request
   (testing "Log request with no headers or body"
-    (log-request dir-get-request test-path)
-    (is (string/includes? 
-          (slurp (str test-path "/logs"))
-          dir-get-request))))
+    (delete-log-file)
+    (with-redefs [current-time 
+                  (fn [] "yyyy-mm-ddThh:mm:ss")]
+      (log-request http/dir-get-request http/test-path)
+      (is (= (slurp log-path)
+             (str "yyyy-mm-ddThh:mm:ss\r\n"
+                  http/dir-get-request 
+                  "\r\n-----\r\n\r\n"))))
+    (delete-log-file)))
 
 (deftest test-clear-log
   (testing "Clear log file"
-    (clear-log test-path)
-    (is (= ""
-           (slurp (str test-path "/logs"))))))
+    (spit log-path "a lot of logs")
+    (clear-log http/test-path)
+    (is (= "" (slurp log-path)))
+    (delete-log-file)))
