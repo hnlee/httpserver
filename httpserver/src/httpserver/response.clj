@@ -23,9 +23,10 @@
           (reason-phrase status-code)))
 
 (defn format-headers [headers-map]
-  (apply str 
-         (for [header (keys headers-map)]
-           (str header ": " (headers-map header) "\r\n"))))
+  (string/join (map #(str % 
+                          ": " 
+                          (headers-map %) 
+                          "\r\n") (keys headers-map))))
 
 (defn linkify [paths]
   (string/join (map #(str "<a href=\"/"
