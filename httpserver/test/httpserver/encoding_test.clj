@@ -1,8 +1,8 @@
 (ns httpserver.encoding-test
   (:import [java.util Base64])
   (:require [clojure.test :refer :all]
-            [httpserver.encoding :refer :all]
-            [httpserver.response :as response]))
+            [httpserver.response :as response]
+            [httpserver.encoding :refer :all]))
 
 (deftest test-str->bytes
   (testing "Convert string to byte array"

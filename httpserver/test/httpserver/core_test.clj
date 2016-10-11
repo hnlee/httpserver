@@ -10,8 +10,9 @@
             [httpserver.core :refer :all])) 
 
 (defn mock-router-fn [client-msg dir]
-  (if (= client-msg 
-         http/dir-get-request) (response/compose 409)
+  (if 
+    (= client-msg 
+       http/dir-get-request) (response/compose 409)
     nil))
 
 (deftest test-default-dir
