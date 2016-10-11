@@ -42,21 +42,21 @@
        body
        "</body></html>"))
 
-(defn ls [path]
-  (apply list (.list (io/as-file path))))
+(defn ls [dir]
+  (apply list (.list dir)))
 
 (defn content 
   ;Option to supply indices for partial content
   ([path]
-    (if 
-      (file/directory? path) (let [[all dir] 
-                                   (re-find #".*(/.*?)$"
-                                            path)]
-        (htmlify (str "Index of " dir)
-                 (linkify (ls path))))
-      (let [file (io/as-file path)]
-        (with-open [stream (io/input-stream file)] 
-          (vec (repeatedly (.length file) 
+    (let [resource (io/as-file path)]
+      (if 
+        (file/directory? 
+          resource) (let [[all dir] (re-find #".*(/.*?)$"
+                                             path)]
+                      (htmlify (str "Index of " dir)
+                               (linkify (ls resource))))
+        (with-open [stream (io/input-stream resource)] 
+          (vec (repeatedly (.length resource) 
                            #(.read stream)))))))
   ([path start end]
    (cond 

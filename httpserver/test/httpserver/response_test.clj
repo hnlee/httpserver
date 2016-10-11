@@ -1,4 +1,5 @@
 (ns httpserver.response-test
+  (:import (java.io File))
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [httpserver.encoding :as code]
@@ -7,8 +8,12 @@
 
 (deftest test-ls
   (testing "Get contents of a directory"
-    (is (= (apply list (.list (io/as-file "./")))
-           (ls "./")))))
+    (let [test-dir (proxy [File] ["test/path"]
+                     (list [] (into-array String 
+                                          ["file1" 
+                                           "file2"])))] 
+      (is (= '("file1" "file2") 
+             (ls test-dir))))))
 
 (deftest test-linkify
   (testing "Return HTML markup for list of paths" 
