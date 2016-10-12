@@ -3,14 +3,13 @@
             [httpserver.encoding :as code]))
 
 (defn parse-parameters [parameters]
-  (if (string/includes?
-        parameters
-        "=") (as-> parameters vars
-                  (string/split vars #"&")
-                  (map #(string/split % #"=") vars)
-                  (reduce concat vars)
-                  (map code/decode-uri vars)
-                  (apply hash-map vars))
+  (if (string/includes? parameters "=") 
+    (as-> parameters vars
+          (string/split vars #"&")
+          (map #(string/split % #"=") vars)
+          (reduce concat vars)
+          (map code/decode-uri vars)
+          (apply hash-map vars))
     (code/decode-uri parameters)))
 
 (defn parse-query [uri]
@@ -29,13 +28,12 @@
            (parse-query uri))))
 
 (defn parse-headers [headers]
-  (if-not
-    (= "" headers) (as-> headers lines
-                         (string/split lines #"\r\n")
-                         (map #(string/split % #": ")
-                              lines)
-                         (apply concat lines)
-                         (apply hash-map lines))
+  (if-not (= "" headers) 
+    (as-> headers lines
+          (string/split lines #"\r\n")
+          (map #(string/split % #": ") lines)
+          (apply concat lines)
+          (apply hash-map lines))
     {}))
 
 

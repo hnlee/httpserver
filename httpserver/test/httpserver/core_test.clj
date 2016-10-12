@@ -10,26 +10,23 @@
             [httpserver.core :refer :all]))
 
 (defn mock-router-fn [client-msg dir]
-  (if
-    (= client-msg
-       http/dir-get-request) (response/compose 409)
+  (if (= client-msg http/dir-get-request) 
+    (response/compose 409)
     nil))
 
 (deftest test-default-dir
   (testing "Value is equal to $PUBLIC_DIR"
-    (with-redefs [getenv
-                  (fn [env-var]
-                    (if
-                      (not= env-var "PUBLIC_DIR") nil
-                      http/test-path))]
+    (with-redefs [getenv (fn [env-var]
+                           (if (not= env-var "PUBLIC_DIR") 
+                             nil
+                             http/test-path))]
       (is (= http/test-path (getenv "PUBLIC_DIR")))
       (is (= http/test-path (default-dir)))))
   (testing "If $PUBLIC_DIR is not set, value is local dir"
-    (with-redefs [getenv
-                  (fn [env-var]
-                    (if
-                      (= env-var "PUBLIC_DIR") nil
-                      http/test-path))]
+    (with-redefs [getenv (fn [env-var]
+                           (if (= env-var "PUBLIC_DIR") 
+                             nil
+                             http/test-path))]
       (is (= "." (default-dir))))))
 
 (deftest test-get-vars

@@ -8,7 +8,7 @@
   (httpserver/threading server
                         dir
                         routes/choose-response))
-    
+
 (defn -main [& args]
   (let [{port :port
          dir :dir} (httpserver/get-vars args)

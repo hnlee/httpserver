@@ -25,17 +25,16 @@
     (router/choose-response client-msg dir))
   ([client-msg dir router-fn]
     (let [custom-route (router-fn client-msg dir)]
-      (if-not
-        (nil? custom-route) custom-route
+      (if-not (nil? custom-route) 
+        custom-route
         (router/choose-response client-msg
                                 dir)))))
 
 (defn serve [connection dir router-fn]
   (try
     (let [client-msg (socket/receive connection)
-          server-msg (if
-                       (nil? router-fn) (route client-msg
-                                               dir)
+          server-msg (if (nil? router-fn) 
+                       (route client-msg dir)
                        (route client-msg dir router-fn))]
       (logging/log-request client-msg dir)
       (socket/give connection server-msg))

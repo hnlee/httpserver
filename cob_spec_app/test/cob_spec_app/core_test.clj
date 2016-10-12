@@ -2,7 +2,7 @@
   (:import [java.net Socket])
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
-            [httpserver.socket :as socket] 
+            [httpserver.socket :as socket]
             [cob-spec-app.core :refer :all]))
 
 (deftest test-run-server
@@ -14,7 +14,7 @@
     (testing "Connect to server"
       (is (.isConnected client)))
     (testing "Send to and receive from server"
-      (.write client-out 
+      (.write client-out
               "GET /not-a-route HTTP/1.1\r\n\r\n\r\n")
       (.flush client-out)
       (is (= "HTTP/1.1 404 Not found"
@@ -24,4 +24,4 @@
               "GET /tea HTTP/1.1\r\n\r\n\r\n")
       (.flush client-out)
       (is (= "HTTP/1.1 200 OK")))))
- 
+

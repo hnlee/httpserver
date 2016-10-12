@@ -8,8 +8,8 @@
 (def log-path (str http/test-path "/logs"))
 
 (defn delete-log-file []
-  (if
-    (.exists (io/as-file log-path)) (io/delete-file log-path)))
+  (if (.exists (io/as-file log-path)) 
+    (io/delete-file log-path)))
 
 (deftest test-log-request
   (testing "Log request with no headers or body"

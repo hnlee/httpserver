@@ -49,12 +49,10 @@
   ;Option to supply indices for partial content
   ([path]
     (let [resource (io/as-file path)]
-      (if
-        (file/directory?
-          resource) (let [[all dir] (re-find #".*(/.*?)$"
-                                             path)]
-                      (htmlify (str "Index of " dir)
-                               (linkify (ls resource))))
+      (if (file/directory? resource) 
+        (let [[all dir] (re-find #".*(/.*?)$" path)]
+          (htmlify (str "Index of " dir)
+                   (linkify (ls resource))))
         (with-open [stream (io/input-stream resource)]
           (vec (repeatedly (.length resource)
                            #(.read stream)))))))
@@ -84,13 +82,11 @@
               (str (format-headers headers-map)
                    "\r\n"))))
   ([status-code headers-map body]
-   (let [msg-body (if
-                    (string? body) (code/str->bytes body)
+   (let [msg-body (if (string? body) 
+                    (code/str->bytes body)
                     body)]
-     (if
-       (length? headers-map) (concat (compose status-code
-                                              headers-map)
-                                     msg-body)
+     (if (length? headers-map) 
+       (concat (compose status-code headers-map) msg-body)
        (compose status-code
                 (merge headers-map
                        {"Content-Length" (count msg-body)})

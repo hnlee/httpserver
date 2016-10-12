@@ -16,40 +16,40 @@
       (is (= (response/compose 200
                                {}
                                data-fatcat)
-             (handle-form "POST" 
+             (handle-form "POST"
                           form-path
                           data-fatcat)))
-      (is (= data-fatcat 
+      (is (= data-fatcat
              (slurp form-path))))
    (testing "Return 200 and update /form content when PUT"
       (is (= (response/compose 200
                                {}
                                data-heathcliff)
-             (handle-form "PUT" 
+             (handle-form "PUT"
                           form-path
                           data-heathcliff)))
-      (is (= data-heathcliff 
+      (is (= data-heathcliff
              (slurp form-path))))
     (testing "Return 200 and delete /form content when DELETE"
       (is (= (code/str->bytes simple-200-response)
-             (handle-form "DELETE" 
+             (handle-form "DELETE"
                           form-path
                           "")))
-      (is (file/not-found? form-path))) 
+      (is (file/not-found? form-path)))
     (testing "Return 200 when GET on /form without data"
       (is (= (code/str->bytes simple-200-response)
-             (handle-form "GET" 
+             (handle-form "GET"
                           form-path
                           ""))))
     (testing "Return 200 and data when GET on /form with data"
-      (handle-form "PUT" 
+      (handle-form "PUT"
                    form-path
                    "data=fatcat")
       (is (= (response/compose
                200
                {}
-               (response/content form-path)) 
-             (handle-form "GET" 
+               (response/content form-path))
+             (handle-form "GET"
                           form-path
                           ""))))))
 
@@ -64,7 +64,7 @@
 (deftest test-restricted
   (testing "Return credentials if GET for /logs"
     (is (= "admin:hunter2"
-           (code/decode-base64 (restricted "GET" 
+           (code/decode-base64 (restricted "GET"
                                            "/logs")))))
   (testing "Return nil if not a GET request"
     (is (nil? (restricted "PUT" "/logs"))))
@@ -92,17 +92,17 @@
 (deftest test-choose-response
   (testing "Hard-coded route"
     (is (= (code/str->bytes simple-200-response)
-           (choose-response tea-get-request 
+           (choose-response tea-get-request
                             path))))
   (testing "Dynamic route for parameters"
     (let [body "my = data\r\nyour = data"]
       (is (= (response/compose 200 {} body)
-             (choose-response parameters-get-request 
+             (choose-response parameters-get-request
                               path)))))
   (testing "Use handle-form function when URI is /form"
     (let [body "data=fatcat"]
       (is (= (response/compose 200 {} body)
-             (choose-response form-put-request 
+             (choose-response form-put-request
                               path)))))
   (testing "Not in defined route"
     (is (nil? (choose-response not-found-get-request

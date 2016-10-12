@@ -39,10 +39,11 @@
   (let [reader (io/reader connection)
         request-line (read-request-line reader)
         headers (read-headers reader)]
-    (if (body? headers) (str request-line
-                             headers
-                             crlf
-                             (read-body headers reader))
+    (if (body? headers) 
+      (str request-line
+           headers
+           crlf
+           (read-body headers reader))
       (str request-line headers crlf))))
 
 (defn give [connection response]

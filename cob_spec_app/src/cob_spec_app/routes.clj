@@ -1,5 +1,5 @@
 (ns cob-spec-app.routes
-  (:require [httpserver.encoding :as code] 
+  (:require [httpserver.encoding :as code]
             [httpserver.request :as request]
             [httpserver.response :as response]
             [httpserver.file :as file]
@@ -8,28 +8,28 @@
             [clojure.java.io :as io]))
 
 (def static-routes
-  {"GET" {"/redirect" 
+  {"GET" {"/redirect"
           [302 {"Location" "http://localhost:5000/"}]
-          "/coffee" 
+          "/coffee"
           [418 {} "I'm a teapot"]
-          "/tea" [200] 
+          "/tea" [200]
          }
-   "PUT" {"/file1" [405]} 
+   "PUT" {"/file1" [405]}
    "POST" {"/text-file.txt" [405]}
-   "OPTIONS" {"/method_options2" 
+   "OPTIONS" {"/method_options2"
               [200 {"Allow" "GET,OPTIONS"}]
-              "/method_options" 
-              [200 {"Allow" 
+              "/method_options"
+              [200 {"Allow"
                     "GET,HEAD,POST,OPTIONS,PUT"}]}
-}) 
+})
 
 (defn handle-form [method path body]
-  (cond 
-    (contains? #{"POST" "PUT"} 
+  (cond
+    (contains? #{"POST" "PUT"}
                method) (do
-                         (spit path 
+                         (spit path
                                body
-                               :append false)  
+                               :append false)
                          (response/compose 200
                                            {}
                                            body))
@@ -38,7 +38,7 @@
                           (response/compose 200))
     (and (file/not-found? path)
          (= "GET" method)) (response/compose 200)
-    (= "GET" method) (response/compose 
+    (= "GET" method) (response/compose
                        200
                        {}
                        (response/content path))))
@@ -48,12 +48,12 @@
        (= uri "/parameters")))
 
 (defn restricted [method uri]
-  (if (and (= method "GET")
-           (= uri "/logs")) (code/encode-base64 
-                              "admin:hunter2")))
+  (if (and (= method "GET") (= uri "/logs"))
+    (code/encode-base64 "admin:hunter2")))
 
 (defn format-query [query]
-  (if (string? query) query 
+  (if (string? query)
+    query
     (string/join "\r\n" (map #(str % " = " (query %))
                              (keys query)))))
 
@@ -69,13 +69,13 @@
          body :body} (request/parse client-msg)
         path (str dir uri)
         credentials (restricted method uri)]
-  (cond 
-    (route? method 
-            uri) (apply response/compose 
+  (cond
+    (route? method
+            uri) (apply response/compose
                         ((static-routes method) uri))
-    (parameters? method 
-                 uri) (response/compose 200 
-                                        {} 
+    (parameters? method
+                 uri) (response/compose 200
+                                        {}
                                         (format-query query))
     (= "/form" uri) (handle-form method path body)
     ((complement nil?) credentials) (router/authorize

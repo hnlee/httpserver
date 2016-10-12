@@ -31,8 +31,8 @@
           (str "Basic " credentials))))
 
 (defn authorize [headers credentials path]
-  (if
-    (credentials? headers credentials) (standard-get path)
+  (if (credentials? headers credentials) 
+    (standard-get path)
     (response/compose 401
                       {"WWW-Authenticate"
                        "Basic realm=\"Admin\""})))
@@ -42,11 +42,11 @@
 
 (defn parse-indices [indices]
   (let [[start end] (string/split indices #"-")]
-    [(if
-       (= "" start) nil
+    [(if (= "" start) 
+       nil
        (Integer. start))
-     (if
-       (nil? end) end
+     (if (nil? end) 
+       end
        (Integer. end))]))
 
 (defn parse-range [headers path]
@@ -61,11 +61,10 @@
           (code/encode-sha1 (response/content path)))))
 
 (defn standard-patch [headers body path]
-  (if (etag? headers path) (do (spit path body)
-                               (response/compose
-                                 204
-                                 {"ETag"
-                                  (code/encode-sha1 body)}))
+  (if (etag? headers path) 
+    (do (spit path body)
+        (response/compose 204
+                          {"ETag" (code/encode-sha1 body)}))
     (response/compose 409)))
 
 (defn choose-response [client-msg dir]
