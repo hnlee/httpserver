@@ -4,14 +4,14 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [httpserver.http-messages :refer :all]
+            [httpserver.http-messages :as http]
             [httpserver.socket :refer :all]))
 
 (deftest test-open
   (let [server-socket (open 5000)]
     (testing "Create a ServerSocket"
       (is (instance? ServerSocket server-socket)))
-    (testing "Socket listening on given port"
+    (testing "Socket bound to given port"
       (is (= 5000 (.getLocalPort server-socket))))
     (.close server-socket)))
 
@@ -42,19 +42,19 @@
 (deftest test-body?
   (testing "Request with no Content-Length header"
     (is ((complement body?) single-line-request)))
-  (testing "Request with Content-Length header" 
+  (testing "Request with Content-Length header"
     (is (body? multi-line-request))))
 
 (deftest test-read-request-line
   (testing "Get request line from request with no headers"
     (with-open [input (StringReader. single-line-request)
                 stream (io/reader input)]
-      (is (= "GET / HTTP/1.1\r\n" 
+      (is (= "GET / HTTP/1.1\r\n"
              (read-request-line stream)))))
   (testing "Get request line from request with headers"
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
-      (is (= "PUT /form HTTP/1.1\r\n" 
+      (is (= "PUT /form HTTP/1.1\r\n"
              (read-request-line stream))))))
 
 (deftest test-read-headers
@@ -62,20 +62,20 @@
     (with-open [input (StringReader. single-line-request)
                 stream (io/reader input)]
       (read-request-line stream)
-      (is (= crlf 
+      (is (= crlf
              (read-headers stream)))))
   (testing "Request with headers"
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
       (read-request-line stream)
-      (is (= (str "Content-Length: 7" crlf) 
+      (is (= (str "Content-Length: 7" crlf)
              (read-headers stream))))))
 
 (deftest test-read-body
   (testing "Read message body from request"
     (with-open [input (StringReader. multi-line-request)
                 stream (io/reader input)]
-      (is (= "My=Data" 
+      (is (= "My=Data"
              (read-body (read-headers stream) stream))))))
 
 (deftest test-receive
@@ -83,15 +83,15 @@
               client-socket (Socket. "localhost" 5000)
               connection (listen server-socket)
               stream (io/writer client-socket)]
-    (testing "Server can get input" 
+    (testing "Server can get input"
       (.write stream single-line-request)
-      (.flush stream) 
-      (is (= single-line-request 
+      (.flush stream)
+      (is (= single-line-request
              (receive connection))))
     (testing "Server can get multiline input"
       (.write stream multi-line-request)
       (.flush stream)
-      (is (= multi-line-request 
+      (is (= multi-line-request
              (receive connection))))))
 
 (deftest test-give
@@ -99,10 +99,10 @@
               client-socket (Socket. "localhost" 5000)
               connection (listen server-socket)
               stream (io/reader client-socket)]
-    (testing "Server can send output" 
+    (testing "Server can send output"
       (let [status-line "HTTP/1.1 200 OK\r\n"
             output (map (comp byte int) status-line)]
         (give connection output)
-        (is (= (str/trim-newline status-line) 
+        (is (= (str/trim-newline status-line)
                (.readLine stream)))))))
- 
+

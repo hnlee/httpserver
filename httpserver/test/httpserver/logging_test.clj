@@ -8,18 +8,18 @@
 (def log-path (str http/test-path "/logs"))
 
 (defn delete-log-file []
-  (if 
+  (if
     (.exists (io/as-file log-path)) (io/delete-file log-path)))
 
 (deftest test-log-request
   (testing "Log request with no headers or body"
     (delete-log-file)
-    (with-redefs [current-time 
+    (with-redefs [current-time
                   (fn [] "yyyy-mm-ddThh:mm:ss")]
       (log-request http/dir-get-request http/test-path)
       (is (= (slurp log-path)
              (str "yyyy-mm-ddThh:mm:ss\r\n"
-                  http/dir-get-request 
+                  http/dir-get-request
                   "\r\n-----\r\n\r\n"))))
     (delete-log-file)))
 

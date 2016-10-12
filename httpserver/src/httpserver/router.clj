@@ -7,13 +7,13 @@
             [httpserver.response :as response]))
 
 (def http-methods
-  #{"OPTIONS" 
-    "GET" 
-    "HEAD"  
-    "POST"  
-    "PUT"  
-    "DELETE"  
-    "TRACE" 
+  #{"OPTIONS"
+    "GET"
+    "HEAD"
+    "POST"
+    "PUT"
+    "DELETE"
+    "TRACE"
     "CONNECT"
     "PATCH"})
 
@@ -31,18 +31,18 @@
           (str "Basic " credentials))))
 
 (defn authorize [headers credentials path]
-  (if 
+  (if
     (credentials? headers credentials) (standard-get path)
     (response/compose 401
                       {"WWW-Authenticate"
-                       "Basic realm=\"Admin\""}))) 
+                       "Basic realm=\"Admin\""})))
 
 (defn range? [headers]
   (contains? headers "Range"))
 
 (defn parse-indices [indices]
   (let [[start end] (string/split indices #"-")]
-    [(if 
+    [(if
        (= "" start) nil
        (Integer. start))
      (if
@@ -62,9 +62,9 @@
 
 (defn standard-patch [headers body path]
   (if (etag? headers path) (do (spit path body)
-                               (response/compose 
+                               (response/compose
                                  204
-                                 {"ETag" 
+                                 {"ETag"
                                   (code/encode-sha1 body)}))
     (response/compose 409)))
 
@@ -78,12 +78,12 @@
     (cond
       (not-allowed? method) (response/compose 405)
       (file/not-found? path) (response/compose 404)
-      (range? headers) (response/compose 
+      (range? headers) (response/compose
                          206
                          {}
-                         (parse-range headers path))  
-      (= method "PATCH") (standard-patch headers 
-                                         body 
+                         (parse-range headers path))
+      (= method "PATCH") (standard-patch headers
+                                         body
                                          path)
       (= method "HEAD") (response/compose 200)
       (= method "GET") (standard-get path))))

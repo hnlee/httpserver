@@ -25,7 +25,7 @@
 (def tea-get-request (format request-string
                              "GET" "/tea" "" ""))
 
-(def parameters-get-request 
+(def parameters-get-request
   (format request-string
           "GET"
           "/parameters?my=data&your=data"
@@ -53,7 +53,7 @@
 (def text-get-request (format request-string
                               "GET" "/file1" "" ""))
 
-(def encoded-get-request 
+(def encoded-get-request
   (format request-string
           "GET" "/%66%69%6C%65%31" "" ""))
 
@@ -66,24 +66,24 @@
 
 (def restricted-request-with-credentials
   (format request-string
-          "GET" 
+          "GET"
           "/logs"
           (str "Authorization: Basic "
                (code/encode-base64 "admin:hunter2"))
           ""))
 
-(def partial-get-request 
+(def partial-get-request
   (format request-string
           "GET"
           "/partial_content.txt"
-          "Range: bytes=0-4" 
+          "Range: bytes=0-4"
           ""))
 
-(def valid-patch-request 
+(def valid-patch-request
   (format request-string
           "PATCH"
           "/patch-content.txt"
           (str "If-Match: "
-               (code/encode-sha1 "default content")) 
+               (code/encode-sha1 "default content"))
           "patched content"))
 

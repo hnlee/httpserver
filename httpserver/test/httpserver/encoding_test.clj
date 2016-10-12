@@ -32,7 +32,7 @@
   (testing "Decode encoded character with hexadecimal digit"
     (is (= "<"
            (decode-uri "%3C"))))
-  (testing "Decode multiple encoded characters" 
+  (testing "Decode multiple encoded characters"
     (is (= " <, >"
            (decode-uri "%20%3C%2C%20%3E")))))
 
@@ -42,7 +42,7 @@
            (encode-uri "/form"))))
   (testing "Encode space"
     (is (= "%20"
-           (encode-uri " ")))) 
+           (encode-uri " "))))
   (testing "Encode <"
     (is (= "%3C"
            (encode-uri "<"))))
@@ -64,7 +64,7 @@
     (is (= ""
            (decode-base64 ""))))
   (testing "Decode base64 string"
-    (let [encoded (encode-base64 "admin")] 
+    (let [encoded (encode-base64 "admin")]
       (is (= "admin"
              (decode-base64 encoded))))))
 

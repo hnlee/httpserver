@@ -23,23 +23,23 @@
 (defn read-headers [reader]
   (loop [headers ""
          line (.readLine reader)]
-    (cond 
+    (cond
       (and (= "" line) (= "" headers)) crlf
-      (= "" line) headers 
+      (= "" line) headers
       :else (recur (str headers line crlf)
-                   (.readLine reader))))) 
+                   (.readLine reader)))))
 
 (defn read-body [headers reader]
   (let [[all length]
         (re-find #"[Cc]ontent-[Ll]ength: ?(\d+)" headers)]
-    (apply str (for [n (range (Integer. length))] 
+    (apply str (for [n (range (Integer. length))]
                  (char (.read reader))))))
 
 (defn receive [connection]
   (let [reader (io/reader connection)
         request-line (read-request-line reader)
         headers (read-headers reader)]
-    (if (body? headers) (str request-line 
+    (if (body? headers) (str request-line
                              headers
                              crlf
                              (read-body headers reader))
@@ -47,8 +47,8 @@
 
 (defn give [connection response]
   (let [stream (io/output-stream connection)]
-    (.write stream 
+    (.write stream
             (byte-array response)
             0
-            (count response)) 
-    (.flush stream))) 
+            (count response))
+    (.flush stream)))

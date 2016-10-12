@@ -6,7 +6,7 @@
 (defn str->bytes [a-string]
   (map byte a-string))
 
-(defn bytes->str [a-byte-array] 
+(defn bytes->str [a-byte-array]
   (string/join "" (map char a-byte-array)))
 
 (defn bytes->hex [a-byte-seq]
@@ -15,7 +15,7 @@
        (string/join "")))
 
 (defn decode-uri [uri]
-  (string/replace uri 
+  (string/replace uri
                   #"(?i)%[0-9a-f]{2}"
                   (fn [encoded-string]
                     (-> encoded-string
@@ -25,8 +25,8 @@
                         (str)))))
 
 (defn encode-uri [uri]
-  (string/replace 
-    uri 
+  (string/replace
+    uri
     #"[^\w/]+"
     (fn [decoded-string]
       (->> decoded-string
@@ -48,9 +48,9 @@
          (.encodeToString encoder))))
 
 (defn encode-sha1 [decoded-string]
-  (let [encoder (MessageDigest/getInstance "SHA-1")] 
+  (let [encoder (MessageDigest/getInstance "SHA-1")]
     (->> decoded-string
-        (str->bytes) 
+        (str->bytes)
         (byte-array)
         (.digest encoder)
         (bytes->hex))))

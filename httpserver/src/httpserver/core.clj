@@ -19,21 +19,21 @@
      :dir (get-in flags ["-d"] (default-dir))
      :router (get-in flags ["-r"] nil)}))
 
-(defn route 
-  ; Optional parameter to supply custom routes 
+(defn route
+  ; Optional parameter to supply custom routes
   ([client-msg dir]
     (router/choose-response client-msg dir))
   ([client-msg dir router-fn]
     (let [custom-route (router-fn client-msg dir)]
-      (if-not 
-        (nil? custom-route) custom-route 
-        (router/choose-response client-msg 
+      (if-not
+        (nil? custom-route) custom-route
+        (router/choose-response client-msg
                                 dir)))))
 
 (defn serve [connection dir router-fn]
-  (try 
+  (try
     (let [client-msg (socket/receive connection)
-          server-msg (if 
+          server-msg (if
                        (nil? router-fn) (route client-msg
                                                dir)
                        (route client-msg dir router-fn))]

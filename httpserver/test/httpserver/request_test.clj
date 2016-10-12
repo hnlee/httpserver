@@ -20,14 +20,14 @@
             :query ""}
            (parse-query "/form"))))
   (testing "URI with query"
-    (is (= {:uri "/form" 
-            :query (parse-parameters "my=data")} 
+    (is (= {:uri "/form"
+            :query (parse-parameters "my=data")}
            (parse-query "/form?my=data"))))
   (testing "URI with multiple variables in query"
     (is (= {:uri "/form"
             :query (parse-parameters "my=data&your=data")}
            (parse-query "/form?my=data&your=data")))))
- 
+
 (deftest test-parse-request-line
   (testing "Parse method and URI from request line"
     (is (= {:method "GET"
@@ -37,14 +37,14 @@
 
 (deftest test-parse-headers
   (testing "Return empty string if no headers"
-    (is (= {} 
+    (is (= {}
            (parse-headers ""))))
   (testing "Parse header type and value from headers"
     (is (= {"Content-Type" "plain/text"
             "Content-Length" "9"}
            (parse-headers (str "Content-Type: plain/text"
                                "\r\n"
-                               "Content-Length: 9")))))) 
+                               "Content-Length: 9"))))))
 
 (deftest test-parse
   (testing "Get method and URI from simple request"

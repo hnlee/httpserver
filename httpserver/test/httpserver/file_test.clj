@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [httpserver.file :refer :all]))
 
-(deftest test-not-found? 
+(deftest test-not-found?
   (testing "File that exists"
     (is (not (not-found? "./project.clj"))))
   (testing "File that does not exist"
