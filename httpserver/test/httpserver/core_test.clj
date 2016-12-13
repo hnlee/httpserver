@@ -29,7 +29,7 @@
                              http/test-path))]
       (is (= "." (default-dir))))))
 
-(deftest test-get-vars
+(deftest test-get-vars ;; lots of repeating of vars here
   (testing "Use default settings if no flags"
     (is (= {:port default-port
             :dir (default-dir)
@@ -73,7 +73,7 @@
                   http/test-path
                   mock-router-fn)))))
 
-(deftest test-serve
+(deftest test-serve ;; the with-open is repeating the same stuff
   (testing "Server sends typical HTTP response to request"
     (with-open [server (socket/open 5000)
                 client-socket (Socket. "localhost" 5000)
