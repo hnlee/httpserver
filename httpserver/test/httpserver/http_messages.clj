@@ -1,6 +1,8 @@
 (ns httpserver.http-messages
   (:require [httpserver.encoding :as code]))
 
+;; is this a fixtures namespace? if show it would be nicer if it was in a directory labelled fixtures. When I first opened this I was like, "where are the tests??"
+
 (def test-path "test/httpserver/public")
 
 (def request-string (str "%s %s HTTP/1.1\r\n"

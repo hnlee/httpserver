@@ -2,11 +2,11 @@
   (:require [clojure.string :as string]
             [httpserver.encoding :as code]))
 
-(defn parse-parameters [parameters]
+(defn parse-parameters [parameters] ;; whitespace on next line
   (if (string/includes? parameters "=") 
     (as-> parameters vars
           (string/split vars #"&")
-          (map #(string/split % #"=") vars)
+          (map #(string/split % #"=") vars) ;; a lot of mapping/reducing happening here in this thread
           (reduce concat vars)
           (map code/decode-uri vars)
           (apply hash-map vars))
@@ -22,12 +22,12 @@
 
 (defn parse-request-line [request-line]
   (let [[all method uri version]
-        (re-find #"^([A-Z]+) (.+) (HTTP.+)"
+        (re-find #"^([A-Z]+) (.+) (HTTP.+)" ;; what is this?
                  request-line)]
     (merge {:method method}
            (parse-query uri))))
 
-(defn parse-headers [headers]
+(defn parse-headers [headers] ;; whitespace on next line
   (if-not (= "" headers) 
     (as-> headers lines
           (string/split lines #"\r\n")
@@ -39,7 +39,7 @@
 
 (defn parse [msg]
   (let [[all request-line headers body]
-        (re-find #"(?s)(.+?)\r\n(.*)\r\n\r\n(.*)" msg)]
+        (re-find #"(?s)(.+?)\r\n(.*)\r\n\r\n(.*)" msg)] ;; what is this?
     (merge (parse-request-line request-line)
            {:headers (parse-headers headers)
             :body body})))

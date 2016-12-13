@@ -6,6 +6,8 @@
             [httpserver.request :as request]
             [httpserver.response :as response]))
 
+;; this could be read in as an EDN file
+;; See: https://github.com/vincentstorme/toaster/blob/master/resources/methods.edn
 (def http-methods
   #{"OPTIONS"
     "GET"
@@ -30,7 +32,7 @@
        (= (headers "Authorization")
           (str "Basic " credentials))))
 
-(defn authorize [headers credentials path]
+(defn authorize [headers credentials path] ;; whitespace on next line
   (if (credentials? headers credentials) 
     (standard-get path)
     (response/compose 401
@@ -41,10 +43,10 @@
   (contains? headers "Range"))
 
 (defn parse-indices [indices]
-  (let [[start end] (string/split indices #"-")]
+  (let [[start end] (string/split indices #"-")] ;; whitespace on next line
     [(if (= "" start) 
        nil
-       (Integer. start))
+       (Integer. start)) ;; whitespace on next line
      (if (nil? end) 
        end
        (Integer. end))]))
@@ -60,7 +62,7 @@
        (= (headers "If-Match")
           (code/encode-sha1 (response/content path)))))
 
-(defn standard-patch [headers body path]
+(defn standard-patch [headers body path] ;; whitespace on next line
   (if (etag? headers path) 
     (do (spit path body)
         (response/compose 204

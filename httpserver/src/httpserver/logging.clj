@@ -2,7 +2,7 @@
   (:import (java.time LocalDateTime))
   (:require [httpserver.router :as router]))
 
-(defn current-time [] (LocalDateTime/now))
+(defn current-time [] (LocalDateTime/now)) ;; why local why not UTC?
 
 (defn log-request [client-msg dir]
   (let [log-path (str dir "/logs")

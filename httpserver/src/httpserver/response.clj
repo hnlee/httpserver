@@ -4,8 +4,11 @@
             [clojure.java.io :as io]
             [clojure.string :as string]))
 
-(def status-line (str "%s %d %s\r\n"))
+(def status-line (str "%s %d %s\r\n")) ;; what is this?
 
+;; it would be nice if this was read in as an EDN or something so the code would
+;; not have to be changed when changes are made here
+;; see: https://github.com/vincentstorme/toaster/blob/master/resources/response-status-codes.edn
 (def reason-phrase {200 "OK"
                     204 "No content"
                     206 "Partial content"
@@ -48,7 +51,7 @@
 (defn content
   ;Option to supply indices for partial content
   ([path]
-    (let [resource (io/as-file path)]
+    (let [resource (io/as-file path)] ;; whitespace on next line
       (if (file/directory? resource) 
         (let [[all dir] (re-find #".*(/.*?)$" path)]
           (htmlify (str "Index of " dir)
@@ -66,7 +69,7 @@
   (cond
     (file/directory? path) "text/html"
     ((complement nil?)
-      (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg"
+      (re-find #"(?i)\.jpe{0,1}g$" path)) "image/jpeg" ;; what is this? does this only support jpeg images?
     :else "text/plain"))
 
 (defn length? [headers-map]
@@ -81,10 +84,10 @@
             (code/str->bytes
               (str (format-headers headers-map)
                    "\r\n"))))
-  ([status-code headers-map body]
+  ([status-code headers-map body] ;; whitespace on next line
    (let [msg-body (if (string? body) 
                     (code/str->bytes body)
-                    body)]
+                    body)] ;; whitespace on next line
      (if (length? headers-map) 
        (concat (compose status-code headers-map) msg-body)
        (compose status-code

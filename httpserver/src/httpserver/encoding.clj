@@ -11,12 +11,12 @@
 
 (defn bytes->hex [a-byte-seq]
   (->> a-byte-seq
-       (map #(format "%02x" %))
+       (map #(format "%02x" %)) ;; what is this?
        (string/join "")))
 
 (defn decode-uri [uri]
   (string/replace uri
-                  #"(?i)%[0-9a-f]{2}"
+                  #"(?i)%[0-9a-f]{2}" ;; what is this?
                   (fn [encoded-string]
                     (-> encoded-string
                         (subs 1)
@@ -27,11 +27,11 @@
 (defn encode-uri [uri]
   (string/replace
     uri
-    #"[^\w/]+"
+    #"[^\w/]+" ;; what is this?
     (fn [decoded-string]
       (->> decoded-string
            (map byte)
-           (map #(format "%%%02X" %))
+           (map #(format "%%%02X" %)) ;; what is this?
            (string/join "")))))
 
 (defn decode-base64 [encoded-string]
